@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora e Fluxo de Precificação de Automação V2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E3A8A', // blue-900
+                        secondary: '#3B82F6', // blue-500
+                        accent: '#F59E0B', // amber-500
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .step-card { transition: all 0.3s ease; }
+        .step-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+        
+        /* Ocultar as setas de incremento/decremento nos inputs numéricos */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="mb-8 text-center md:text-left">
+            <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2"><i class="fas fa-calculator mr-2 text-secondary"></i> Fluxo de Precificação Multidimensional</h1>
+            <p class="text-gray-600">Simulador de orçamentos para Consultoria de Automação em Goiânia (Método Markup + Value-Based Pricing)</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Coluna da Esquerda: Inputs (Fluxo) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Passo 0: Integração n8n e Dados do Cliente -->
+                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-slate-800">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-slate-100 text-slate-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3"><i class="fas fa-user-tie"></i></span>
+                        Dados do Cliente e Integração n8n
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-4">Preencha os dados do prospect para enviar o cálculo final diretamente para o seu fluxo de automação.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa / Cliente</label>
+                            <input type="text" id="clienteNome" placeholder="Ex: Acme Corp" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">E-mail do Responsável</label>
+                            <input type="email" id="clienteEmail" placeholder="contato@empresa.com" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
+                            <input type="tel" id="clienteTelefone" placeholder="(62) 99999-9999" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ / CPF</label>
+                            <input type="text" id="clienteDoc" placeholder="00.000.000/0001-00" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Endereço Completo</label>
+                            <input type="text" id="clienteEndereco" placeholder="Av. T-9, Setor Bueno, Goiânia - GO" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Projeto</label>
+                            <input type="text" id="projetoNome" placeholder="Ex: Automação de CRM e Onboarding" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                        <label class="block text-sm font-bold text-slate-700 mb-1"><i class="fas fa-link mr-1"></i> URL do Webhook (n8n)</label>
+                        <input type="url" id="webhookUrl" placeholder="https://seu-n8n.exemplo.com/webhook/gerar-proposta" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-slate-500 focus:border-slate-500 font-mono">
+                    </div>
+                </div>
+
+                <!-- PASSO 1 -->
+                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-blue-500">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
+                        Custo de Produção (Tempo)
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-4">Estime o tempo de arquitetura, desenvolvimento (n8n, Make) e testes.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Horas Estimadas do Projeto</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="far fa-clock text-gray-400"></i>
+                                </div>
+                                <input type="number" id="horasProjeto" value="40" class="pl-10 w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Custo da Hora Técnica (R$)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">R$</span>
+                                </div>
+                                <input type="number" id="valorHora" value="130" class="pl-10 w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Média Goiânia: R$100 a R$160</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASSO 2 -->
+                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-purple-500">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-purple-100 text-purple-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
+                        Índice de Markup (Saúde Financeira)
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-4">Define o multiplicador para cobrir custos operacionais e garantir o lucro da consultoria.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Despesas Fixas <i class="fas fa-info-circle text-gray-400 cursor-help" title="Proporção de aluguel, software (licenças n8n/Make), internet"></i></label>
+                            <div class="relative">
+                                <input type="number" id="percFixo" value="15" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Despesas Var. <i class="fas fa-info-circle text-gray-400 cursor-help" title="Impostos (DAS/Simples) + Taxas de Cartão/Nota Fiscal"></i></label>
+                            <div class="relative">
+                                <input type="number" id="percVariavel" value="12" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Margem Lucro <i class="fas fa-info-circle text-gray-400 cursor-help" title="O que sobra limpo no caixa da empresa para reinvestimento"></i></label>
+                            <div class="relative">
+                                <input type="number" id="percLucro" value="25" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASSO 3 -->
+                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-red-500">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-red-100 text-red-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
+                        Fator de Complexidade e Risco
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-4">Ajuste para cobrir imprevistos com APIs instáveis ou lógicas muito complexas.</p>
+                    
+                    <div>
+                        <select id="riscoComplexidade" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors bg-white" onchange="calcular()">
+                            <option value="0">Baixa (Integrações Nativas Simples) - Sem acréscimo</option>
+                            <option value="0.15" selected>Média (Lógicas Condicionais, Tratamento de Erros) - +15%</option>
+                            <option value="0.30">Alta (RegEx, Bancos de Dados, APIs mal documentadas) - +30%</option>
+                            <option value="0.50">Extrema (Sistemas Legados, IA Generativa Customizada) - +50%</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PASSO 4 -->
+                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-green-500">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="bg-green-100 text-green-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">4</span>
+                        Captura de Valor e Recorrência (SLA)
+                    </h2>
+                    <p class="text-sm text-gray-500 mb-4">Precificação baseada no valor gerado ao cliente e definição do contrato de manutenção mensal.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Economia Anual (R$)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">R$</span>
+                                </div>
+                                <input type="number" id="economiaAnual" value="45000" class="pl-10 w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Tempo/Salários poupados</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fator Captura (%)</label>
+                            <div class="relative">
+                                <input type="number" id="fatorCaptura" value="8" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1">Sua fatia do lucro (5-15%)</p>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                            <label class="block text-sm font-bold text-blue-800 mb-1"><i class="fas fa-sync-alt mr-1"></i> % Manutenção (SLA)</label>
+                            <div class="relative">
+                                <input type="number" id="percManutencao" value="15" class="w-full border border-blue-300 rounded-lg p-2 pr-8 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" oninput="calcular()">
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-400">%</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-blue-600 mt-1">Calculado sobre o Valor Total</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Coluna da Direita: Resultados (Dashboard) -->
+            <div class="lg:col-span-1">
+                <div class="bg-slate-900 text-white rounded-xl shadow-2xl p-6 lg:sticky lg:top-8 border-t-4 border-accent">
+                    <h2 class="text-2xl font-bold mb-6 border-b border-slate-700 pb-3 flex items-center justify-between">
+                        Proposta Comercial
+                        <i class="fas fa-file-invoice-dollar text-slate-400"></i>
+                    </h2>
+
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center group">
+                            <span class="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">Custo Direto (Horas):</span>
+                            <span id="resCMV" class="font-mono text-sm">R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center group">
+                            <span class="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">Índice Markup (Multiplicador):</span>
+                            <span id="resMarkup" class="font-mono text-blue-400 text-sm bg-blue-900/30 px-2 py-0.5 rounded">0.00x</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-4 pt-2 group">
+                            <span class="text-slate-200 font-semibold text-sm group-hover:text-white transition-colors">Preço Base Mínimo:</span>
+                            <span id="resPBase" class="font-mono font-semibold">R$ 0,00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center text-sm group">
+                            <span class="text-slate-400 group-hover:text-slate-300 transition-colors">+ Risco/Complexidade:</span>
+                            <span id="resComplex" class="font-mono text-red-400">+ R$ 0,00</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-4 group">
+                            <span class="text-slate-400 group-hover:text-slate-300 transition-colors">+ Captura de Valor (ROI):</span>
+                            <span id="resEstrategico" class="font-mono text-green-400">+ R$ 0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 rounded-lg p-5 mb-6 border border-slate-700 shadow-inner">
+                        <span class="block text-slate-400 text-xs mb-1 uppercase tracking-wider text-center font-semibold">Valor Total do Projeto (Setup Único)</span>
+                        <div id="resTotal" class="text-3xl md:text-4xl font-bold text-accent text-center mt-2 drop-shadow-md">R$ 0,00</div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-5 border border-blue-700/50 relative overflow-hidden">
+                        <!-- Efeito de brilho de fundo -->
+                        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500 rounded-full opacity-10 blur-xl"></div>
+                        
+                        <span class="block text-blue-300 text-sm mb-2 font-bold relative z-10"><i class="fas fa-lock mr-1"></i> Contrato de Sustentação (MRR)</span>
+                        <p class="text-xs text-blue-200/70 mb-3 relative z-10">Monitoramento ativo, correção de erros de API e pequenos ajustes de fluxo.</p>
+                        <div class="flex justify-between items-center bg-black/20 p-3 rounded-md border border-white/5 relative z-10">
+                            <span class="text-slate-300 text-sm font-medium">Mensalidade:</span>
+                            <span id="resMRR" class="font-mono font-bold text-lg text-white">R$ 0,00 <span class="text-xs text-slate-400 font-normal">/mês</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação e Webhook -->
+                    <div class="mt-6 space-y-3 relative z-10">
+                        <button id="btnWebhook" onclick="enviarWebhook()" class="w-full bg-accent hover:bg-yellow-500 text-slate-900 font-bold text-lg py-4 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-1 flex items-center justify-center">
+                            <i class="fas fa-rocket mr-2"></i> Gerar Orçamento via n8n
+                        </button>
+                        <button onclick="limparFormulario()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-xl shadow transition flex items-center justify-center">
+                            <i class="fas fa-eraser mr-2"></i> Limpar Dados
+                        </button>
+                        <div id="webhookMessage" class="mt-4 text-sm hidden p-3 rounded-lg text-center font-medium transition-all"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Estado global para armazenar os valores calculados matemáticos (sem formatação de moeda R$)
+        window.dadosCalculados = {};
+
+        // Função para formatar moeda de forma limpa
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        };
+
+        function calcular() {
+            try {
+                // Passo 1: Custos Diretos
+                const horas = parseFloat(document.getElementById('horasProjeto').value) || 0;
+                const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
+                const cmv = horas * valorHora; // Custo de Mercadoria Vendida (Seu tempo)
+
+                // Passo 2: Markup
+                const percFixo = parseFloat(document.getElementById('percFixo').value) || 0;
+                const percVariavel = parseFloat(document.getElementById('percVariavel').value) || 0;
+                const percLucro = parseFloat(document.getElementById('percLucro').value) || 0;
+                
+                const somaPercentuais = percFixo + percVariavel + percLucro;
+                
+                // Correção: Aplicando o Markup aditivo padrão (Custo + Margens)
+                const markup = 1 + (somaPercentuais / 100);
+                
+                document.getElementById('resMarkup').classList.replace('text-red-500', 'text-blue-400'); // Reseta a cor caso houvesse erro antes
+
+                const pBase = cmv * markup; // Preço Base
+
+                // Passo 3: Complexidade
+                const percComplexidade = parseFloat(document.getElementById('riscoComplexidade').value);
+                const valComplexidade = pBase * percComplexidade;
+
+                // Passo 4: Valor Estratégico e Manutenção
+                const economia = parseFloat(document.getElementById('economiaAnual').value) || 0;
+                const fatorCaptura = (parseFloat(document.getElementById('fatorCaptura').value) || 0) / 100;
+                const valEstrategico = economia * fatorCaptura;
+
+                // Totais
+                const precoFinal = pBase + valComplexidade + valEstrategico;
+
+                // Correção: Manutenção Mensal calculada sobre o Valor Total do Projeto
+                const percManutencao = (parseFloat(document.getElementById('percManutencao').value) || 0) / 100;
+                const mrr = precoFinal * percManutencao;
+
+                // Atualizando a Interface do Usuário (DOM)
+                document.getElementById('resCMV').innerText = formatCurrency(cmv);
+                document.getElementById('resMarkup').innerText = markup.toFixed(2) + 'x';
+                document.getElementById('resPBase').innerText = formatCurrency(pBase);
+                document.getElementById('resComplex').innerText = '+ ' + formatCurrency(valComplexidade);
+                document.getElementById('resEstrategico').innerText = '+ ' + formatCurrency(valEstrategico);
+                document.getElementById('resTotal').innerText = formatCurrency(precoFinal);
+                
+                // Correção: Usando innerHTML para não apagar o span com "/mês"
+                document.getElementById('resMRR').innerHTML = `${formatCurrency(mrr)} <span class="text-xs text-slate-400 font-normal">/mês</span>`;
+
+                // Salvar dados brutos (float) no estado global para enviar no Payload JSON (n8n)
+                window.dadosCalculados = {
+                    custo_direto_cmv: cmv,
+                    indice_markup: markup,
+                    preco_base: pBase,
+                    adicional_complexidade: valComplexidade,
+                    premio_estrategico_roi: valEstrategico,
+                    valor_total_projeto: precoFinal,
+                    valor_mensalidade_mrr: mrr
+                };
+
+            } catch (error) {
+                console.error("Erro no cálculo: ", error);
+            }
+        }
+
+        // Função para disparar os dados para o Webhook do n8n
+        async function enviarWebhook() {
+            const btn = document.getElementById('btnWebhook');
+            const msgBox = document.getElementById('webhookMessage');
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+
+            if (!webhookUrl) {
+                mostrarNotificacao('Erro: Informe a URL do Webhook do n8n na seção superior.', 'error');
+                return;
+            }
+
+            // Construção do Payload JSON Estruturado
+            const payload = {
+                cliente: {
+                    nome: document.getElementById('clienteNome').value.trim(),
+                    email: document.getElementById('clienteEmail').value.trim(),
+                    telefone: document.getElementById('clienteTelefone').value.trim(),
+                    documento: document.getElementById('clienteDoc').value.trim(),
+                    endereco: document.getElementById('clienteEndereco').value.trim(),
+                    projeto: document.getElementById('projetoNome').value.trim()
+                },
+                parametros_entrada: {
+                    horas: parseFloat(document.getElementById('horasProjeto').value),
+                    valor_hora: parseFloat(document.getElementById('valorHora').value),
+                    complexidade_percentual: parseFloat(document.getElementById('riscoComplexidade').value),
+                    economia_anual: parseFloat(document.getElementById('economiaAnual').value),
+                },
+                resultados_calculados: window.dadosCalculados,
+                data_geracao: new Date().toISOString()
+            };
+
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando para n8n...';
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            msgBox.classList.add('hidden');
+
+            try {
+                // Disparo HTTP POST
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    mostrarNotificacao('✅ Orçamento enviado com sucesso para a automação!', 'success');
+                } else {
+                    mostrarNotificacao(`❌ Erro do servidor n8n (Status ${response.status}). Verifique a URL e a autenticação.`, 'error');
+                }
+            } catch (error) {
+                mostrarNotificacao(`❌ Erro de conexão: Não foi possível alcançar o Webhook. Verifique bloqueios de CORS ou URL inválida.`, 'error');
+                console.error("Erro no fetch:", error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+        // Função auxiliar para exibir notificações visuais
+        function mostrarNotificacao(mensagem, tipo) {
+            const msgBox = document.getElementById('webhookMessage');
+            msgBox.innerText = mensagem;
+            msgBox.classList.remove('hidden', 'bg-red-500', 'bg-green-500', 'text-white');
+            
+            if (tipo === 'error') {
+                msgBox.classList.add('bg-red-500', 'text-white');
+            } else {
+                msgBox.classList.add('bg-green-500', 'text-white');
+            }
+        }
+
+        // Função para limpar todos os dados do formulário
+        function limparFormulario() {
+            if (confirm('Tem certeza que deseja limpar os dados do cliente e reiniciar os valores do orçamento?')) {
+                // Limpar campos de texto (Dados do Cliente)
+                const camposTexto = ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco', 'projetoNome'];
+                camposTexto.forEach(id => document.getElementById(id).value = '');
+                
+                // Nota: O webhookUrl NÃO é limpo para facilitar orçamentos em sequência.
+
+                // Resetar valores da calculadora para os padrões iniciais (Goiânia/Markup Base)
+                document.getElementById('horasProjeto').value = '40';
+                document.getElementById('valorHora').value = '130';
+                document.getElementById('percFixo').value = '15';
+                document.getElementById('percVariavel').value = '12';
+                document.getElementById('percLucro').value = '25';
+                document.getElementById('riscoComplexidade').value = '0.15';
+                document.getElementById('economiaAnual').value = '45000';
+                document.getElementById('fatorCaptura').value = '8';
+                document.getElementById('percManutencao').value = '15';
+
+                // Esconder notificações
+                const msgBox = document.getElementById('webhookMessage');
+                msgBox.classList.add('hidden');
+
+                // Recalcular para zerar o painel da direita
+                calcular();
+                
+                // Rolar a tela suavemente para o topo para preencher o novo cliente
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Executar o cálculo assim que a página carregar
+        window.addEventListener('DOMContentLoaded', calcular);
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+# Usa um servidor web Nginx oficial e super leve
+FROM nginx:alpine
+
+# Remove a página padrão do Nginx
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copia a sua calculadora (que deve se chamar index.html) para a pasta pública do Nginx
+COPY index.html /usr/share/nginx/html/index.html
+
+# Expõe a porta 80 (O Easypanel cuidará do HTTPS automaticamente)
+EXPOSE 80
