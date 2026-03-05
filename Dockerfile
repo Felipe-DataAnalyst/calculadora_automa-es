@@ -8,4 +8,5 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY index.html /usr/share/nginx/html/index.html
 
 # Expõe a porta 80 (O Easypanel cuidará do HTTPS automaticamente)
+
 EXPOSE 80
