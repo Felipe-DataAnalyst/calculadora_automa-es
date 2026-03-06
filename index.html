@@ -391,7 +391,7 @@
                 if(formaPagamento === '50') {
                     parcela1 = precoFinalSetup / 2;
                     parcela2 = precoFinalSetup / 2;
-                    document.getElementById('lblTipoPagamento').innerText = '50% Início / 50% Entrega';
+                    document.getElementById('lblTipoPagamento').innerText = '50% Início / 50% Metade';
                     document.getElementById('resParcelas').innerHTML = `Sinal: <span class="text-white">${formatCurrency(parcela1)}</span> <br> Metade: <span class="text-white">${formatCurrency(parcela2)}</span>`;
                 } else {
                     document.getElementById('lblTipoPagamento').innerText = '100% à vista no Início';
