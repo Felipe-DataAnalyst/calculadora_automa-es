@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora e Fluxo de Precificação de Automação V2</title>
+    <title>Calculadora Pro: Consultoria de Automação</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -11,275 +11,242 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#1E3A8A', // blue-900
-                        secondary: '#3B82F6', // blue-500
+                        primary: '#0F172A', // slate-900
+                        secondary: '#2563EB', // blue-600
                         accent: '#F59E0B', // amber-500
+                        success: '#10B981', // emerald-500
                     }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .step-card { transition: all 0.3s ease; }
-        .step-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
-        
-        /* Ocultar as setas de incremento/decremento nos inputs numéricos */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .tab-btn.active { border-bottom-width: 2px; border-color: #2563EB; color: #2563EB; font-weight: 600; }
+        .tab-btn { color: #64748B; font-weight: 500; }
+        /* Esconder setas dos inputs numéricos */
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-800 antialiased p-4 md:p-8">
+<body class="text-slate-800 antialiased p-4 md:p-8">
 
     <div class="max-w-7xl mx-auto">
         
-        <header class="mb-8 text-center md:text-left">
-            <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2"><i class="fas fa-calculator mr-2 text-secondary"></i> Fluxo de Precificação Multidimensional</h1>
-            <p class="text-gray-600">Simulador de orçamentos para Consultoria de Automação em Goiânia (Método Markup + Value-Based Pricing)</p>
+        <header class="mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-2"><i class="fas fa-robot text-secondary mr-2"></i> Orçamentos</h1>
+                <p class="text-slate-500">Geração de propostas e contratos automatizados</p>
+            </div>
+            
+            <!-- Navegação por Abas -->
+            <div class="mt-4 md:mt-0 flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-slate-200">
+                <button onclick="mudarAba('principal')" id="btnAbaPrincipal" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
+                    <i class="fas fa-file-invoice-dollar mr-1"></i> Novo Orçamento
+                </button>
+                <button onclick="mudarAba('configuracoes')" id="btnAbaConfig" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
+                    <i class="fas fa-cog mr-1"></i> Configurações Base
+                </button>
+            </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Coluna da Esquerda: Inputs (Fluxo) -->
+            <!-- COLUNA DA ESQUERDA: Formulários e Listas -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <!-- Passo 0: Integração n8n e Dados do Cliente -->
-                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-slate-800">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span class="bg-slate-100 text-slate-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3"><i class="fas fa-user-tie"></i></span>
-                        Dados do Cliente e Integração n8n
-                    </h2>
-                    <p class="text-sm text-gray-500 mb-4">Preencha os dados do prospect para enviar o cálculo final diretamente para o seu fluxo de automação.</p>
+                <!-- ================= ABA PRINCIPAL ================= -->
+                <div id="abaPrincipal" class="fade-in space-y-6">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome da Empresa / Cliente</label>
-                            <input type="text" id="clienteNome" placeholder="Ex: Acme Corp" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">E-mail do Responsável</label>
-                            <input type="email" id="clienteEmail" placeholder="contato@empresa.com" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Telefone / WhatsApp</label>
-                            <input type="tel" id="clienteTelefone" placeholder="(62) 99999-9999" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CNPJ / CPF</label>
-                            <input type="text" id="clienteDoc" placeholder="00.000.000/0001-00" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Endereço Completo</label>
-                            <input type="text" id="clienteEndereco" placeholder="Av. T-9, Setor Bueno, Goiânia - GO" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nome do Projeto</label>
-                            <input type="text" id="projetoNome" placeholder="Ex: Automação de CRM e Onboarding" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors">
+                    <!-- Dados do Cliente -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-building text-slate-400 mr-2"></i> Dados do Cliente</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Empresa</label>
+                                <input type="text" id="clienteNome" placeholder="Ex: Acme Corp" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">E-mail</label>
+                                <input type="email" id="clienteEmail" placeholder="contato@empresa.com" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Telefone/WhatsApp</label>
+                                <input type="tel" id="clienteTelefone" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">CNPJ/CPF</label>
+                                <input type="text" id="clienteDoc" placeholder="00.000.000/0001-00" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label>
+                                <input type="text" id="clienteEndereco" placeholder="Av. Principal, 1000 - Goiânia, GO" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                        <label class="block text-sm font-bold text-slate-700 mb-1"><i class="fas fa-link mr-1"></i> URL do Webhook (n8n)</label>
-                        <input type="url" id="webhookUrl" placeholder="https://seu-n8n.exemplo.com/webhook/gerar-proposta" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-slate-500 focus:border-slate-500 font-mono">
+
+                    <!-- Lista de Automações (Carrinho) -->
+                    <div class="bg-white rounded-xl shadow-sm border border-secondary p-6">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                            <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo do Projeto</h2>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">1 Item</span>
+                        </div>
+                        
+                        <!-- Container Dinâmico -->
+                        <div id="listaAutomacoes" class="space-y-4 mb-4">
+                            <!-- Os itens serão injetados aqui pelo JavaScript -->
+                        </div>
+
+                        <button onclick="adicionarAutomacao()" class="w-full border-2 border-dashed border-slate-300 text-slate-500 hover:border-secondary hover:text-secondary font-semibold py-3 rounded-xl transition-colors flex items-center justify-center">
+                            <i class="fas fa-plus-circle mr-2"></i> Adicionar Nova Automação ao Pacote
+                        </button>
                     </div>
+
+                    <!-- Fatores Comerciais (Estratégico) -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-chart-line text-success mr-2"></i> Fatores Comerciais</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Captura de Valor (ROI) <i class="fas fa-info-circle text-slate-400" title="% da economia gerada que será cobrada"></i></label>
+                                <div class="relative">
+                                    <input type="number" id="fatorCaptura" value="10" class="w-full border border-slate-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-secondary focus:border-secondary font-bold text-lg" oninput="calcular()">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">%</div>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-1">Recomendado: 5% a 15%</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <label class="block text-sm font-bold text-blue-800 mb-1">Manutenção Mensal (SLA) <i class="fas fa-info-circle text-blue-400" title="% sobre o valor total cobrado mensalmente"></i></label>
+                                <div class="relative">
+                                    <input type="number" id="percManutencao" value="15" class="w-full border border-blue-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold text-lg text-blue-900" oninput="calcular()">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-blue-500">%</div>
+                                </div>
+                                <p class="text-xs text-blue-600 mt-1">Sustentação do pacote</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação (Webhooks) -->
+                    <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <button id="btnWebhookOrcamento" onclick="dispararWebhook('orcamento')" class="w-full bg-primary hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center">
+                                <i class="fas fa-paper-plane mr-2 text-secondary"></i> Enviar Proposta
+                            </button>
+                            <button id="btnWebhookContrato" onclick="dispararWebhook('contrato')" class="w-full bg-success hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center">
+                                <i class="fas fa-file-signature mr-2"></i> Gerar Contrato
+                            </button>
+                        </div>
+                        <button onclick="limparFormulario()" class="w-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center text-sm">
+                            <i class="fas fa-eraser mr-2"></i> Limpar Dados do Cliente
+                        </button>
+                        <div id="webhookMessage" class="hidden p-3 rounded-lg text-center font-medium text-sm transition-all"></div>
+                    </div>
+
                 </div>
 
-                <!-- PASSO 1 -->
-                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-blue-500">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span class="bg-blue-100 text-blue-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
-                        Custo de Produção (Tempo)
-                    </h2>
-                    <p class="text-sm text-gray-500 mb-4">Estime o tempo de arquitetura, desenvolvimento (n8n, Make) e testes.</p>
+                <!-- ================= ABA CONFIGURAÇÕES ================= -->
+                <div id="abaConfiguracoes" class="hidden fade-in space-y-6">
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Horas Estimadas do Projeto</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="far fa-clock text-gray-400"></i>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-accent">
+                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-sliders-h mr-2"></i> Parâmetros da Consultoria</h2>
+                        <p class="text-sm text-slate-500 mb-6">Estes valores definem o seu custo base e margem de lucro para todos os orçamentos.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Custo da Hora Técnica (R$)</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">R$</div>
+                                    <input type="number" id="valorHora" value="130" class="pl-10 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary" oninput="calcular()">
                                 </div>
-                                <input type="number" id="horasProjeto" value="40" class="pl-10 w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
                             </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Custo da Hora Técnica (R$)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">R$</span>
+                            
+                            <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Despesas Fixas (%)</label>
+                                    <input type="number" id="percFixo" value="15" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="calcular()">
                                 </div>
-                                <input type="number" id="valorHora" value="130" class="pl-10 w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Impostos/Var. (%)</label>
+                                    <input type="number" id="percVariavel" value="12" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="calcular()">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-600 mb-1">Margem de Lucro (%)</label>
+                                    <input type="number" id="percLucro" value="25" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="calcular()">
+                                </div>
                             </div>
-                            <p class="text-xs text-gray-400 mt-1">Média Goiânia: R$100 a R$160</p>
                         </div>
                     </div>
-                </div>
 
-                <!-- PASSO 2 -->
-                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-purple-500">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span class="bg-purple-100 text-purple-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
-                        Índice de Markup (Saúde Financeira)
-                    </h2>
-                    <p class="text-sm text-gray-500 mb-4">Define o multiplicador para cobrir custos operacionais e garantir o lucro da consultoria.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Despesas Fixas <i class="fas fa-info-circle text-gray-400 cursor-help" title="Proporção de aluguel, software (licenças n8n/Make), internet"></i></label>
-                            <div class="relative">
-                                <input type="number" id="percFixo" value="15" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">%</span>
-                                </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-secondary">
+                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-plug mr-2"></i> Integrações (Webhooks n8n)</h2>
+                        <p class="text-sm text-slate-500 mb-6">Defina para onde os botões de ação enviarão os dados (JSON).</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">URL Webhook: Proposta Comercial</label>
+                                <input type="url" id="urlOrcamento" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/e719e067-1b0b-4490-af01-8ba23d116ae5" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-secondary">
+                                <p class="text-xs text-slate-400 mt-1">Disparado pelo botão azul na tela principal.</p>
                             </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Despesas Var. <i class="fas fa-info-circle text-gray-400 cursor-help" title="Impostos (DAS/Simples) + Taxas de Cartão/Nota Fiscal"></i></label>
-                            <div class="relative">
-                                <input type="number" id="percVariavel" value="12" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Margem Lucro <i class="fas fa-info-circle text-gray-400 cursor-help" title="O que sobra limpo no caixa da empresa para reinvestimento"></i></label>
-                            <div class="relative">
-                                <input type="number" id="percLucro" value="25" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">%</span>
-                                </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">URL Webhook: Geração de Contrato</label>
+                                <input type="url" id="urlContrato" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/ca410092-9808-45c3-841b-caebe48f440f" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-success">
+                                <p class="text-xs text-slate-400 mt-1">Disparado pelo botão verde. Ideal para gerar Google Docs/PDF via n8n.</p>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- PASSO 3 -->
-                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-red-500">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span class="bg-red-100 text-red-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">3</span>
-                        Fator de Complexidade e Risco
-                    </h2>
-                    <p class="text-sm text-gray-500 mb-4">Ajuste para cobrir imprevistos com APIs instáveis ou lógicas muito complexas.</p>
-                    
-                    <div>
-                        <select id="riscoComplexidade" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors bg-white" onchange="calcular()">
-                            <option value="0">Baixa (Integrações Nativas Simples) - Sem acréscimo</option>
-                            <option value="0.15" selected>Média (Lógicas Condicionais, Tratamento de Erros) - +15%</option>
-                            <option value="0.30">Alta (RegEx, Bancos de Dados, APIs mal documentadas) - +30%</option>
-                            <option value="0.50">Extrema (Sistemas Legados, IA Generativa Customizada) - +50%</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- PASSO 4 -->
-                <div class="bg-white rounded-xl shadow-md p-6 step-card border-l-4 border-green-500">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span class="bg-green-100 text-green-800 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold mr-3">4</span>
-                        Captura de Valor e Recorrência (SLA)
-                    </h2>
-                    <p class="text-sm text-gray-500 mb-4">Precificação baseada no valor gerado ao cliente e definição do contrato de manutenção mensal.</p>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Economia Anual (R$)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">R$</span>
-                                </div>
-                                <input type="number" id="economiaAnual" value="45000" class="pl-10 w-full border border-gray-300 rounded-lg p-2 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">Tempo/Salários poupados</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fator Captura (%)</label>
-                            <div class="relative">
-                                <input type="number" id="fatorCaptura" value="8" class="w-full border border-gray-300 rounded-lg p-2 pr-8 focus:ring-secondary focus:border-secondary transition-colors" oninput="calcular()">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">%</span>
-                                </div>
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">Sua fatia do lucro (5-15%)</p>
-                        </div>
-                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                            <label class="block text-sm font-bold text-blue-800 mb-1"><i class="fas fa-sync-alt mr-1"></i> % Manutenção (SLA)</label>
-                            <div class="relative">
-                                <input type="number" id="percManutencao" value="15" class="w-full border border-blue-300 rounded-lg p-2 pr-8 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white" oninput="calcular()">
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-400">%</span>
-                                </div>
-                            </div>
-                            <p class="text-xs text-blue-600 mt-1">Calculado sobre o Valor Total</p>
-                        </div>
-                    </div>
                 </div>
 
             </div>
 
-            <!-- Coluna da Direita: Resultados (Dashboard) -->
+            <!-- COLUNA DA DIREITA: Dashboard de Resultados -->
             <div class="lg:col-span-1">
-                <div class="bg-slate-900 text-white rounded-xl shadow-2xl p-6 lg:sticky lg:top-8 border-t-4 border-accent">
-                    <h2 class="text-2xl font-bold mb-6 border-b border-slate-700 pb-3 flex items-center justify-between">
-                        Proposta Comercial
-                        <i class="fas fa-file-invoice-dollar text-slate-400"></i>
+                <div class="bg-primary text-white rounded-xl shadow-2xl p-6 lg:sticky lg:top-8 border-t-4 border-accent">
+                    <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-3 flex items-center justify-between">
+                        Resumo do Pacote
+                        <i class="fas fa-calculator text-slate-400"></i>
                     </h2>
 
-                    <div class="space-y-4 mb-6">
-                        <div class="flex justify-between items-center group">
-                            <span class="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">Custo Direto (Horas):</span>
-                            <span id="resCMV" class="font-mono text-sm">R$ 0,00</span>
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400">Total de Horas:</span>
+                            <span id="resHoras" class="font-mono">0 h</span>
                         </div>
-                        <div class="flex justify-between items-center group">
-                            <span class="text-slate-400 text-sm group-hover:text-slate-300 transition-colors">Índice Markup (Multiplicador):</span>
-                            <span id="resMarkup" class="font-mono text-blue-400 text-sm bg-blue-900/30 px-2 py-0.5 rounded">0.00x</span>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400">Custo Direto (Tempo):</span>
+                            <span id="resCMV" class="font-mono">R$ 0,00</span>
                         </div>
-                        <div class="flex justify-between items-center border-b border-slate-700 pb-4 pt-2 group">
-                            <span class="text-slate-200 font-semibold text-sm group-hover:text-white transition-colors">Preço Base Mínimo:</span>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400">Índice Markup (Multiplicador):</span>
+                            <span id="resMarkup" class="font-mono text-secondary bg-blue-900/30 px-2 py-0.5 rounded">0.00x</span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3 pt-1">
+                            <span class="text-slate-200 font-semibold text-sm">Preço Base Global:</span>
                             <span id="resPBase" class="font-mono font-semibold">R$ 0,00</span>
                         </div>
 
-                        <div class="flex justify-between items-center text-sm group">
-                            <span class="text-slate-400 group-hover:text-slate-300 transition-colors">+ Risco/Complexidade:</span>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-400">+ Adicional de Complexidade:</span>
                             <span id="resComplex" class="font-mono text-red-400">+ R$ 0,00</span>
                         </div>
-                        <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-4 group">
-                            <span class="text-slate-400 group-hover:text-slate-300 transition-colors">+ Captura de Valor (ROI):</span>
-                            <span id="resEstrategico" class="font-mono text-green-400">+ R$ 0,00</span>
+                        <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-3">
+                            <span class="text-slate-400">+ Captura de Valor (ROI):</span>
+                            <span id="resEstrategico" class="font-mono text-success">+ R$ 0,00</span>
                         </div>
                     </div>
 
-                    <div class="bg-slate-800 rounded-lg p-5 mb-6 border border-slate-700 shadow-inner">
-                        <span class="block text-slate-400 text-xs mb-1 uppercase tracking-wider text-center font-semibold">Valor Total do Projeto (Setup Único)</span>
-                        <div id="resTotal" class="text-3xl md:text-4xl font-bold text-accent text-center mt-2 drop-shadow-md">R$ 0,00</div>
+                    <div class="bg-slate-800 rounded-lg p-5 mb-4 border border-slate-700 shadow-inner">
+                        <span class="block text-slate-400 text-xs mb-1 uppercase tracking-wider text-center font-semibold">Setup Total (Implementação)</span>
+                        <div id="resTotal" class="text-3xl font-bold text-accent text-center mt-1 drop-shadow-md">R$ 0,00</div>
                     </div>
 
-                    <div class="bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-5 border border-blue-700/50 relative overflow-hidden">
-                        <!-- Efeito de brilho de fundo -->
-                        <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500 rounded-full opacity-10 blur-xl"></div>
-                        
-                        <span class="block text-blue-300 text-sm mb-2 font-bold relative z-10"><i class="fas fa-lock mr-1"></i> Contrato de Sustentação (MRR)</span>
-                        <p class="text-xs text-blue-200/70 mb-3 relative z-10">Monitoramento ativo, correção de erros de API e pequenos ajustes de fluxo.</p>
-                        <div class="flex justify-between items-center bg-black/20 p-3 rounded-md border border-white/5 relative z-10">
-                            <span class="text-slate-300 text-sm font-medium">Mensalidade:</span>
+                    <div class="bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-4 border border-blue-700/50">
+                        <span class="block text-blue-300 text-sm mb-2 font-bold"><i class="fas fa-lock mr-1"></i> Contrato (SLA Mensal)</span>
+                        <div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5">
+                            <span class="text-slate-300 text-sm">MRR:</span>
                             <span id="resMRR" class="font-mono font-bold text-lg text-white">R$ 0,00 <span class="text-xs text-slate-400 font-normal">/mês</span></span>
                         </div>
-                    </div>
-
-                    <!-- Botões de Ação e Webhook -->
-                    <div class="mt-6 space-y-3 relative z-10">
-                        <button id="btnWebhook" onclick="enviarWebhook()" class="w-full bg-accent hover:bg-yellow-500 text-slate-900 font-bold text-lg py-4 px-4 rounded-xl shadow-lg transform transition hover:-translate-y-1 flex items-center justify-center">
-                            <i class="fas fa-rocket mr-2"></i> Gerar Orçamento via n8n
-                        </button>
-                        <button onclick="limparFormulario()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-4 rounded-xl shadow transition flex items-center justify-center">
-                            <i class="fas fa-eraser mr-2"></i> Limpar Dados
-                        </button>
-                        <div id="webhookMessage" class="mt-4 text-sm hidden p-3 rounded-lg text-center font-medium transition-all"></div>
                     </div>
 
                 </div>
@@ -288,71 +255,167 @@
     </div>
 
     <script>
-        // Estado global para armazenar os valores calculados matemáticos (sem formatação de moeda R$)
-        window.dadosCalculados = {};
+        // ESTADO GLOBAL: Array que guarda todas as automações do pacote
+        let automacoes = [
+            { id: Date.now(), nome: 'Automação 1', horas: 20, complexidade: 0.15, economia: 20000 }
+        ];
 
-        // Função para formatar moeda de forma limpa
-        const formatCurrency = (value) => {
-            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-        };
+        // Formatador de Moeda
+        const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
+        // LÓGICA DE ABAS (Tabs)
+        function mudarAba(abaDestino) {
+            const btnPrincipal = document.getElementById('btnAbaPrincipal');
+            const btnConfig = document.getElementById('btnAbaConfig');
+            const abaPrincipal = document.getElementById('abaPrincipal');
+            const abaConfiguracoes = document.getElementById('abaConfiguracoes');
+
+            if (abaDestino === 'principal') {
+                btnPrincipal.classList.add('active', 'border-b-2', 'border-secondary');
+                btnConfig.classList.remove('active', 'border-b-2', 'border-secondary');
+                abaPrincipal.classList.remove('hidden');
+                abaConfiguracoes.classList.add('hidden');
+            } else {
+                btnConfig.classList.add('active', 'border-b-2', 'border-secondary');
+                btnPrincipal.classList.remove('active', 'border-b-2', 'border-secondary');
+                abaConfiguracoes.classList.remove('hidden');
+                abaPrincipal.classList.add('hidden');
+            }
+        }
+
+        // RENDERIZAR LISTA DE AUTOMAÇÕES
+        function renderizarAutomacoes() {
+            const container = document.getElementById('listaAutomacoes');
+            container.innerHTML = ''; // Limpa a lista
+            
+            document.getElementById('contadorAutomacoes').innerText = `${automacoes.length} Item(s)`;
+
+            automacoes.forEach((auto, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 rounded-lg p-4 border border-slate-200 relative group';
+                
+                // Botão de Excluir (aparece a partir do 2º item)
+                let btnExcluir = '';
+                if (automacoes.length > 1) {
+                    btnExcluir = `<button onclick="removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition-colors" title="Remover"><i class="fas fa-times-circle text-lg"></i></button>`;
+                }
+
+                card.innerHTML = `
+                    ${btnExcluir}
+                    <div class="mb-3 pr-8">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Fluxo/Automação</label>
+                        <input type="text" value="${auto.nome}" onchange="atualizarAutomacao(${auto.id}, 'nome', this.value)" placeholder="Ex: Onboarding via WhatsApp" class="w-full border border-slate-300 rounded text-sm p-2 focus:ring-1 focus:ring-secondary">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-600 mb-1"><i class="far fa-clock"></i> Horas Est.</label>
+                            <input type="number" value="${auto.horas}" oninput="atualizarAutomacao(${auto.id}, 'horas', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-center">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-600 mb-1"><i class="fas fa-exclamation-triangle"></i> Complexidade</label>
+                            <select onchange="atualizarAutomacao(${auto.id}, 'complexidade', parseFloat(this.value))" class="w-full border border-slate-300 rounded text-sm p-2 bg-white">
+                                <option value="0" ${auto.complexidade === 0 ? 'selected' : ''}>Baixa (+0%)</option>
+                                <option value="0.15" ${auto.complexidade === 0.15 ? 'selected' : ''}>Média (+15%)</option>
+                                <option value="0.30" ${auto.complexidade === 0.30 ? 'selected' : ''}>Alta (+30%)</option>
+                                <option value="0.50" ${auto.complexidade === 0.50 ? 'selected' : ''}>Extrema (+50%)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-600 mb-1"><i class="fas fa-piggy-bank text-success"></i> Econ. Anual (R$)</label>
+                            <input type="number" value="${auto.economia}" oninput="atualizarAutomacao(${auto.id}, 'economia', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-right">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            calcular(); // Recalcula sempre que renderizar
+        }
+
+        // CRUD DAS AUTOMAÇÕES
+        function adicionarAutomacao() {
+            const nova = { id: Date.now(), nome: `Nova Automação ${automacoes.length + 1}`, horas: 10, complexidade: 0.15, economia: 5000 };
+            automacoes.push(nova);
+            renderizarAutomacoes();
+        }
+
+        function removerAutomacao(id) {
+            if (automacoes.length <= 1) return;
+            automacoes = automacoes.filter(a => a.id !== id);
+            renderizarAutomacoes();
+        }
+
+        function atualizarAutomacao(id, campo, valor) {
+            const index = automacoes.findIndex(a => a.id === id);
+            if (index !== -1) {
+                automacoes[index][campo] = valor;
+                if(campo !== 'nome') calcular(); // Não precisa recalcular se mudar só o nome
+            }
+        }
+
+        // LÓGICA MATEMÁTICA PRINCIPAL
         function calcular() {
             try {
-                // Passo 1: Custos Diretos
-                const horas = parseFloat(document.getElementById('horasProjeto').value) || 0;
+                // Variáveis Globais (Configurações)
                 const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
-                const cmv = horas * valorHora; // Custo de Mercadoria Vendida (Seu tempo)
-
-                // Passo 2: Markup
                 const percFixo = parseFloat(document.getElementById('percFixo').value) || 0;
                 const percVariavel = parseFloat(document.getElementById('percVariavel').value) || 0;
                 const percLucro = parseFloat(document.getElementById('percLucro').value) || 0;
                 
-                const somaPercentuais = percFixo + percVariavel + percLucro;
-                
-                // Correção: Aplicando o Markup aditivo padrão (Custo + Margens)
-                const markup = 1 + (somaPercentuais / 100);
-                
-                document.getElementById('resMarkup').classList.replace('text-red-500', 'text-blue-400'); // Reseta a cor caso houvesse erro antes
-
-                const pBase = cmv * markup; // Preço Base
-
-                // Passo 3: Complexidade
-                const percComplexidade = parseFloat(document.getElementById('riscoComplexidade').value);
-                const valComplexidade = pBase * percComplexidade;
-
-                // Passo 4: Valor Estratégico e Manutenção
-                const economia = parseFloat(document.getElementById('economiaAnual').value) || 0;
+                // Variáveis Comerciais
                 const fatorCaptura = (parseFloat(document.getElementById('fatorCaptura').value) || 0) / 100;
-                const valEstrategico = economia * fatorCaptura;
-
-                // Totais
-                const precoFinal = pBase + valComplexidade + valEstrategico;
-
-                // Correção: Manutenção Mensal calculada sobre o Valor Total do Projeto
                 const percManutencao = (parseFloat(document.getElementById('percManutencao').value) || 0) / 100;
-                const mrr = precoFinal * percManutencao;
 
-                // Atualizando a Interface do Usuário (DOM)
-                document.getElementById('resCMV').innerText = formatCurrency(cmv);
-                document.getElementById('resMarkup').innerText = markup.toFixed(2) + 'x';
-                document.getElementById('resPBase').innerText = formatCurrency(pBase);
-                document.getElementById('resComplex').innerText = '+ ' + formatCurrency(valComplexidade);
-                document.getElementById('resEstrategico').innerText = '+ ' + formatCurrency(valEstrategico);
-                document.getElementById('resTotal').innerText = formatCurrency(precoFinal);
+                // Markup
+                const somaPercentuais = percFixo + percVariavel + percLucro;
+                const markup = 1 + (somaPercentuais / 100);
+
+                // Acumuladores do Pacote
+                let totalHoras = 0;
+                let totalComplexidadeValor = 0;
+                let totalEconomiaAnual = 0;
+
+                // Processar cada automação do carrinho
+                automacoes.forEach(auto => {
+                    totalHoras += auto.horas;
+                    totalEconomiaAnual += auto.economia;
+                    
+                    // Complexidade é calculada sobre o preço base DE CADA item
+                    const precoBaseItem = (auto.horas * valorHora) * markup;
+                    totalComplexidadeValor += (precoBaseItem * auto.complexidade);
+                });
+
+                // Cálculos Finais
+                const cmvGlobal = totalHoras * valorHora;
+                const pBaseGlobal = cmvGlobal * markup;
+                const valorEstrategicoGlobal = totalEconomiaAnual * fatorCaptura;
                 
-                // Correção: Usando innerHTML para não apagar o span com "/mês"
-                document.getElementById('resMRR').innerHTML = `${formatCurrency(mrr)} <span class="text-xs text-slate-400 font-normal">/mês</span>`;
+                const precoFinalSetup = pBaseGlobal + totalComplexidadeValor + valorEstrategicoGlobal;
+                const valorMRR = precoFinalSetup * percManutencao;
 
-                // Salvar dados brutos (float) no estado global para enviar no Payload JSON (n8n)
+                // Atualizar DOM
+                document.getElementById('resHoras').innerText = `${totalHoras} h`;
+                document.getElementById('resCMV').innerText = formatCurrency(cmvGlobal);
+                document.getElementById('resMarkup').innerText = markup.toFixed(2) + 'x';
+                document.getElementById('resPBase').innerText = formatCurrency(pBaseGlobal);
+                document.getElementById('resComplex').innerText = '+ ' + formatCurrency(totalComplexidadeValor);
+                document.getElementById('resEstrategico').innerText = '+ ' + formatCurrency(valorEstrategicoGlobal);
+                document.getElementById('resTotal').innerText = formatCurrency(precoFinalSetup);
+                document.getElementById('resMRR').innerHTML = `${formatCurrency(valorMRR)} <span class="text-xs text-slate-400 font-normal">/mês</span>`;
+
+                // Salvar estado para o Webhook
                 window.dadosCalculados = {
-                    custo_direto_cmv: cmv,
-                    indice_markup: markup,
-                    preco_base: pBase,
-                    adicional_complexidade: valComplexidade,
-                    premio_estrategico_roi: valEstrategico,
-                    valor_total_projeto: precoFinal,
-                    valor_mensalidade_mrr: mrr
+                    totais_pacote: {
+                        horas: totalHoras,
+                        cmv: cmvGlobal,
+                        preco_base: pBaseGlobal,
+                        adicional_complexidade: totalComplexidadeValor,
+                        economia_anual_cliente: totalEconomiaAnual,
+                        premio_roi: valorEstrategicoGlobal,
+                        valor_setup_total: precoFinalSetup,
+                        valor_mrr_mensal: valorMRR
+                    },
+                    parametros_usados: { valorHora, markup, fatorCaptura, percManutencao }
                 };
 
             } catch (error) {
@@ -360,45 +423,57 @@
             }
         }
 
-        // Função para disparar os dados para o Webhook do n8n
-        async function enviarWebhook() {
-            const btn = document.getElementById('btnWebhook');
+        // DISPARO DE WEBHOOKS (Orçamento ou Contrato)
+        async function dispararWebhook(tipo) {
             const msgBox = document.getElementById('webhookMessage');
-            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            let btnId, webhookUrl;
+
+            // Define qual botão chamou e qual URL usar
+            if (tipo === 'orcamento') {
+                btnId = 'btnWebhookOrcamento';
+                webhookUrl = document.getElementById('urlOrcamento').value.trim();
+            } else {
+                btnId = 'btnWebhookContrato';
+                webhookUrl = document.getElementById('urlContrato').value.trim();
+            }
+
+            const btn = document.getElementById(btnId);
 
             if (!webhookUrl) {
-                mostrarNotificacao('Erro: Informe a URL do Webhook do n8n na seção superior.', 'error');
+                mostrarNotificacao(`Aviso: Configure a URL do webhook de ${tipo.toUpperCase()} na aba Configurações.`, 'error');
+                mudarAba('configuracoes'); // Leva o usuário para a aba certa
                 return;
             }
 
-            // Construção do Payload JSON Estruturado
+            // Validação básica do cliente
+            const clienteNome = document.getElementById('clienteNome').value.trim();
+            if (!clienteNome) {
+                mostrarNotificacao('Aviso: Preencha pelo menos o Nome da Empresa antes de gerar.', 'error');
+                return;
+            }
+
+            // Construir Payload Rica (Com o array de automações)
             const payload = {
+                tipo_disparo: tipo, // 'orcamento' ou 'contrato'
+                data_geracao: new Date().toISOString(),
                 cliente: {
-                    nome: document.getElementById('clienteNome').value.trim(),
+                    nome: clienteNome,
                     email: document.getElementById('clienteEmail').value.trim(),
                     telefone: document.getElementById('clienteTelefone').value.trim(),
                     documento: document.getElementById('clienteDoc').value.trim(),
-                    endereco: document.getElementById('clienteEndereco').value.trim(),
-                    projeto: document.getElementById('projetoNome').value.trim()
+                    endereco: document.getElementById('clienteEndereco').value.trim()
                 },
-                parametros_entrada: {
-                    horas: parseFloat(document.getElementById('horasProjeto').value),
-                    valor_hora: parseFloat(document.getElementById('valorHora').value),
-                    complexidade_percentual: parseFloat(document.getElementById('riscoComplexidade').value),
-                    economia_anual: parseFloat(document.getElementById('economiaAnual').value),
-                },
-                resultados_calculados: window.dadosCalculados,
-                data_geracao: new Date().toISOString()
+                escopo_projeto: automacoes, // Envia a lista detalhada
+                financeiro_consolidado: window.dadosCalculados
             };
 
-            const originalText = btn.innerHTML;
+            // Estado de Loading UI
+            const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Enviando para n8n...';
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processando...';
             msgBox.classList.add('hidden');
 
             try {
-                // Disparo HTTP POST
                 const response = await fetch(webhookUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -406,67 +481,43 @@
                 });
 
                 if (response.ok) {
-                    mostrarNotificacao('✅ Orçamento enviado com sucesso para a automação!', 'success');
+                    mostrarNotificacao(`✅ ${tipo === 'orcamento' ? 'Proposta enviada' : 'Contrato gerado'} com sucesso via n8n!`, 'success');
                 } else {
-                    mostrarNotificacao(`❌ Erro do servidor n8n (Status ${response.status}). Verifique a URL e a autenticação.`, 'error');
+                    mostrarNotificacao(`❌ Erro n8n (Status ${response.status}).`, 'error');
                 }
             } catch (error) {
-                mostrarNotificacao(`❌ Erro de conexão: Não foi possível alcançar o Webhook. Verifique bloqueios de CORS ou URL inválida.`, 'error');
-                console.error("Erro no fetch:", error);
+                mostrarNotificacao(`❌ Erro de conexão ao enviar Webhook.`, 'error');
+                console.error(error);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = originalText;
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                btn.innerHTML = originalHtml;
             }
         }
 
-        // Função auxiliar para exibir notificações visuais
         function mostrarNotificacao(mensagem, tipo) {
             const msgBox = document.getElementById('webhookMessage');
             msgBox.innerText = mensagem;
-            msgBox.classList.remove('hidden', 'bg-red-500', 'bg-green-500', 'text-white');
-            
-            if (tipo === 'error') {
-                msgBox.classList.add('bg-red-500', 'text-white');
-            } else {
-                msgBox.classList.add('bg-green-500', 'text-white');
-            }
+            msgBox.className = `p-3 rounded-lg text-center font-medium text-sm transition-all mt-3 ${tipo === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200'}`;
         }
 
-        // Função para limpar todos os dados do formulário
         function limparFormulario() {
-            if (confirm('Tem certeza que deseja limpar os dados do cliente e reiniciar os valores do orçamento?')) {
-                // Limpar campos de texto (Dados do Cliente)
-                const camposTexto = ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco', 'projetoNome'];
-                camposTexto.forEach(id => document.getElementById(id).value = '');
+            if (confirm('Deseja limpar os dados do cliente e resetar as automações? As configurações de custo não serão perdidas.')) {
+                // Limpar campos cliente
+                ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco'].forEach(id => document.getElementById(id).value = '');
                 
-                // Nota: O webhookUrl NÃO é limpo para facilitar orçamentos em sequência.
-
-                // Resetar valores da calculadora para os padrões iniciais (Goiânia/Markup Base)
-                document.getElementById('horasProjeto').value = '40';
-                document.getElementById('valorHora').value = '130';
-                document.getElementById('percFixo').value = '15';
-                document.getElementById('percVariavel').value = '12';
-                document.getElementById('percLucro').value = '25';
-                document.getElementById('riscoComplexidade').value = '0.15';
-                document.getElementById('economiaAnual').value = '45000';
-                document.getElementById('fatorCaptura').value = '8';
-                document.getElementById('percManutencao').value = '15';
-
-                // Esconder notificações
-                const msgBox = document.getElementById('webhookMessage');
-                msgBox.classList.add('hidden');
-
-                // Recalcular para zerar o painel da direita
-                calcular();
+                // Resetar automações para 1 item padrão
+                automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 10, complexidade: 0.15, economia: 5000 }];
+                renderizarAutomacoes();
                 
-                // Rolar a tela suavemente para o topo para preencher o novo cliente
+                document.getElementById('webhookMessage').classList.add('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        // Executar o cálculo assim que a página carregar
-        window.addEventListener('DOMContentLoaded', calcular);
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', () => {
+            renderizarAutomacoes();
+        });
     </script>
 </body>
 </html>
