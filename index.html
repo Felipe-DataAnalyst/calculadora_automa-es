@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Pro: Consultoria de Automação</title>
+    <title>Calculadora Pro: Consultoria de Automação V4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -11,10 +11,10 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#0F172A', // slate-900
-                        secondary: '#2563EB', // blue-600
-                        accent: '#F59E0B', // amber-500
-                        success: '#10B981', // emerald-500
+                        primary: '#0F172A',
+                        secondary: '#2563EB',
+                        accent: '#F59E0B',
+                        success: '#10B981',
                     }
                 }
             }
@@ -24,7 +24,6 @@
         body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
         .tab-btn.active { border-bottom-width: 2px; border-color: #2563EB; color: #2563EB; font-weight: 600; }
         .tab-btn { color: #64748B; font-weight: 500; }
-        /* Esconder setas dos inputs numéricos */
         input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
@@ -37,11 +36,10 @@
         
         <header class="mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center">
             <div>
-                <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-2"><i class="fas fa-robot text-secondary mr-2"></i> Orçamentos</h1>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-2"><i class="fas fa-robot text-secondary mr-2"></i> Orçamentos n8n Pro</h1>
                 <p class="text-slate-500">Geração de propostas e contratos automatizados</p>
             </div>
             
-            <!-- Navegação por Abas -->
             <div class="mt-4 md:mt-0 flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-slate-200">
                 <button onclick="mudarAba('principal')" id="btnAbaPrincipal" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
                     <i class="fas fa-file-invoice-dollar mr-1"></i> Novo Orçamento
@@ -54,13 +52,10 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- COLUNA DA ESQUERDA: Formulários e Listas -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <!-- ================= ABA PRINCIPAL ================= -->
                 <div id="abaPrincipal" class="fade-in space-y-6">
                     
-                    <!-- Dados do Cliente -->
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                         <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-building text-slate-400 mr-2"></i> Dados do Cliente</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -87,72 +82,75 @@
                         </div>
                     </div>
 
-                    <!-- Lista de Automações (Carrinho) -->
                     <div class="bg-white rounded-xl shadow-sm border border-secondary p-6">
                         <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                            <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo do Projeto</h2>
+                            <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo do Projeto (Automações)</h2>
                             <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">1 Item</span>
                         </div>
                         
-                        <!-- Container Dinâmico -->
-                        <div id="listaAutomacoes" class="space-y-4 mb-4">
-                            <!-- Os itens serão injetados aqui pelo JavaScript -->
-                        </div>
+                        <div id="listaAutomacoes" class="space-y-4 mb-4"></div>
 
                         <button onclick="adicionarAutomacao()" class="w-full border-2 border-dashed border-slate-300 text-slate-500 hover:border-secondary hover:text-secondary font-semibold py-3 rounded-xl transition-colors flex items-center justify-center">
                             <i class="fas fa-plus-circle mr-2"></i> Adicionar Nova Automação ao Pacote
                         </button>
                     </div>
 
-                    <!-- Fatores Comerciais (Estratégico) -->
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-chart-line text-success mr-2"></i> Fatores Comerciais</h2>
+                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-chart-line text-success mr-2"></i> Fatores Comerciais & Pagamento</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <!-- Nova Condição de Pagamento -->
+                            <div class="md:col-span-2 bg-slate-50 border border-slate-200 p-4 rounded-lg">
+                                <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fas fa-handshake mr-1 text-slate-500"></i> Condição de Pagamento do Setup</label>
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                                    <button id="btnPag100" onclick="setFormaPagamento('100')" class="flex-1 py-3 px-4 rounded-lg bg-secondary text-white font-bold shadow-md transition-all transform hover:scale-[1.02]">
+                                        100% no Início (À vista)
+                                    </button>
+                                    <button id="btnPag50" onclick="setFormaPagamento('50')" class="flex-1 py-3 px-4 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50">
+                                        50% Sinal / 50% na Entrega
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                <label class="block text-sm font-bold text-slate-700 mb-1">Captura de Valor (ROI) <i class="fas fa-info-circle text-slate-400" title="% da economia gerada que será cobrada"></i></label>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Captura de Valor (ROI)</label>
                                 <div class="relative">
                                     <input type="number" id="fatorCaptura" value="10" class="w-full border border-slate-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-secondary focus:border-secondary font-bold text-lg" oninput="calcular()">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">%</div>
                                 </div>
-                                <p class="text-xs text-slate-500 mt-1">Recomendado: 5% a 15%</p>
                             </div>
                             <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                <label class="block text-sm font-bold text-blue-800 mb-1">Manutenção Mensal (SLA) <i class="fas fa-info-circle text-blue-400" title="% sobre o valor total cobrado mensalmente"></i></label>
+                                <label class="block text-sm font-bold text-blue-800 mb-1">Manutenção Mensal (SLA)</label>
                                 <div class="relative">
                                     <input type="number" id="percManutencao" value="15" class="w-full border border-blue-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold text-lg text-blue-900" oninput="calcular()">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-blue-500">%</div>
                                 </div>
-                                <p class="text-xs text-blue-600 mt-1">Sustentação do pacote</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Botões de Ação (Webhooks) -->
                     <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 space-y-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <button id="btnWebhookOrcamento" onclick="dispararWebhook('orcamento')" class="w-full bg-primary hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center">
-                                <i class="fas fa-paper-plane mr-2 text-secondary"></i> Enviar Proposta
+                                <i class="fas fa-paper-plane mr-2 text-secondary"></i> Enviar Proposta (n8n)
                             </button>
                             <button id="btnWebhookContrato" onclick="dispararWebhook('contrato')" class="w-full bg-success hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center">
-                                <i class="fas fa-file-signature mr-2"></i> Gerar Contrato
+                                <i class="fas fa-file-signature mr-2"></i> Gerar Contrato (n8n)
                             </button>
                         </div>
                         <button onclick="limparFormulario()" class="w-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center text-sm">
                             <i class="fas fa-eraser mr-2"></i> Limpar Dados do Cliente
                         </button>
-                        <div id="webhookMessage" class="hidden p-3 rounded-lg text-center font-medium text-sm transition-all"></div>
+                        <div id="webhookMessage" class="hidden p-4 rounded-lg text-center font-bold text-sm transition-all shadow-sm"></div>
                     </div>
 
                 </div>
 
-                <!-- ================= ABA CONFIGURAÇÕES ================= -->
                 <div id="abaConfiguracoes" class="hidden fade-in space-y-6">
-                    
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-accent">
                         <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-sliders-h mr-2"></i> Parâmetros da Consultoria</h2>
-                        <p class="text-sm text-slate-500 mb-6">Estes valores definem o seu custo base e margem de lucro para todos os orçamentos.</p>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-1">Custo da Hora Técnica (R$)</label>
                                 <div class="relative">
@@ -179,28 +177,24 @@
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-secondary">
-                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-plug mr-2"></i> Integrações (Webhooks n8n)</h2>
-                        <p class="text-sm text-slate-500 mb-6">Defina para onde os botões de ação enviarão os dados (JSON).</p>
+                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-link mr-2"></i> Links dos Webhooks (n8n)</h2>
+                        <p class="text-sm text-red-500 font-semibold mb-6">Importante: No n8n, você deve ativar a opção "Respond to CORS" no seu nó de Webhook para não dar erro.</p>
                         
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">URL Webhook: Proposta Comercial</label>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">URL: Proposta Comercial (Orçamento)</label>
                                 <input type="url" id="urlOrcamento" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/e719e067-1b0b-4490-af01-8ba23d116ae5" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-secondary">
-                                <p class="text-xs text-slate-400 mt-1">Disparado pelo botão azul na tela principal.</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">URL Webhook: Geração de Contrato</label>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">URL: Geração de Contrato</label>
                                 <input type="url" id="urlContrato" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/ca410092-9808-45c3-841b-caebe48f440f" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-success">
-                                <p class="text-xs text-slate-400 mt-1">Disparado pelo botão verde. Ideal para gerar Google Docs/PDF via n8n.</p>
                             </div>
                         </div>
                     </div>
-
                 </div>
 
             </div>
 
-            <!-- COLUNA DA DIREITA: Dashboard de Resultados -->
             <div class="lg:col-span-1">
                 <div class="bg-primary text-white rounded-xl shadow-2xl p-6 lg:sticky lg:top-8 border-t-4 border-accent">
                     <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-3 flex items-center justify-between">
@@ -218,34 +212,41 @@
                             <span id="resCMV" class="font-mono">R$ 0,00</span>
                         </div>
                         <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">Índice Markup (Multiplicador):</span>
+                            <span class="text-slate-400">Índice Markup (Mult.):</span>
                             <span id="resMarkup" class="font-mono text-secondary bg-blue-900/30 px-2 py-0.5 rounded">0.00x</span>
                         </div>
                         <div class="flex justify-between items-center border-b border-slate-700 pb-3 pt-1">
                             <span class="text-slate-200 font-semibold text-sm">Preço Base Global:</span>
                             <span id="resPBase" class="font-mono font-semibold">R$ 0,00</span>
                         </div>
-
                         <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">+ Adicional de Complexidade:</span>
+                            <span class="text-slate-400">+ Complexidade/Risco:</span>
                             <span id="resComplex" class="font-mono text-red-400">+ R$ 0,00</span>
                         </div>
                         <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-3">
-                            <span class="text-slate-400">+ Captura de Valor (ROI):</span>
+                            <span class="text-slate-400">+ Prêmio ROI:</span>
                             <span id="resEstrategico" class="font-mono text-success">+ R$ 0,00</span>
                         </div>
                     </div>
 
-                    <div class="bg-slate-800 rounded-lg p-5 mb-4 border border-slate-700 shadow-inner">
+                    <div class="bg-slate-800 rounded-lg p-5 mb-2 border border-slate-700 shadow-inner">
                         <span class="block text-slate-400 text-xs mb-1 uppercase tracking-wider text-center font-semibold">Setup Total (Implementação)</span>
                         <div id="resTotal" class="text-3xl font-bold text-accent text-center mt-1 drop-shadow-md">R$ 0,00</div>
                     </div>
 
+                    <!-- Bloco Condição de Pagamento Refletida -->
+                    <div id="blocoParcelas" class="bg-black/30 rounded-lg p-3 mb-4 border border-slate-700/50 text-center">
+                        <span class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Forma de Pagamento: <span id="lblTipoPagamento" class="text-white">100% à vista</span></span>
+                        <div id="resParcelas" class="text-sm font-semibold text-slate-200">
+                            <!-- Injetado por JS -->
+                        </div>
+                    </div>
+
                     <div class="bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-4 border border-blue-700/50">
-                        <span class="block text-blue-300 text-sm mb-2 font-bold"><i class="fas fa-lock mr-1"></i> Contrato (SLA Mensal)</span>
+                        <span class="block text-blue-300 text-sm mb-2 font-bold"><i class="fas fa-lock mr-1"></i> SLA de Sustentação</span>
                         <div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5">
-                            <span class="text-slate-300 text-sm">MRR:</span>
-                            <span id="resMRR" class="font-mono font-bold text-lg text-white">R$ 0,00 <span class="text-xs text-slate-400 font-normal">/mês</span></span>
+                            <span class="text-slate-300 text-sm">Mensalidade:</span>
+                            <span id="resMRR" class="font-mono font-bold text-lg text-white">R$ 0,00</span>
                         </div>
                     </div>
 
@@ -255,15 +256,11 @@
     </div>
 
     <script>
-        // ESTADO GLOBAL: Array que guarda todas as automações do pacote
-        let automacoes = [
-            { id: Date.now(), nome: 'Automação 1', horas: 20, complexidade: 0.15, economia: 20000 }
-        ];
+        let automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 20, complexidade: 0.15, economia: 20000 }];
+        let formaPagamento = '100'; // '100' ou '50'
 
-        // Formatador de Moeda
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-        // LÓGICA DE ABAS (Tabs)
         function mudarAba(abaDestino) {
             const btnPrincipal = document.getElementById('btnAbaPrincipal');
             const btnConfig = document.getElementById('btnAbaConfig');
@@ -283,36 +280,45 @@
             }
         }
 
-        // RENDERIZAR LISTA DE AUTOMAÇÕES
+        function setFormaPagamento(tipo) {
+            formaPagamento = tipo;
+            const btn100 = document.getElementById('btnPag100');
+            const btn50 = document.getElementById('btnPag50');
+
+            if(tipo === '100') {
+                btn100.className = "flex-1 py-3 px-4 rounded-lg bg-secondary text-white font-bold shadow-md transition-all transform hover:scale-[1.02]";
+                btn50.className = "flex-1 py-3 px-4 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50";
+            } else {
+                btn50.className = "flex-1 py-3 px-4 rounded-lg bg-secondary text-white font-bold shadow-md transition-all transform hover:scale-[1.02]";
+                btn100.className = "flex-1 py-3 px-4 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50";
+            }
+            calcular();
+        }
+
         function renderizarAutomacoes() {
             const container = document.getElementById('listaAutomacoes');
-            container.innerHTML = ''; // Limpa a lista
-            
+            container.innerHTML = '';
             document.getElementById('contadorAutomacoes').innerText = `${automacoes.length} Item(s)`;
 
-            automacoes.forEach((auto, index) => {
+            automacoes.forEach((auto) => {
                 const card = document.createElement('div');
                 card.className = 'bg-slate-50 rounded-lg p-4 border border-slate-200 relative group';
                 
-                // Botão de Excluir (aparece a partir do 2º item)
-                let btnExcluir = '';
-                if (automacoes.length > 1) {
-                    btnExcluir = `<button onclick="removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition-colors" title="Remover"><i class="fas fa-times-circle text-lg"></i></button>`;
-                }
+                let btnExcluir = automacoes.length > 1 ? `<button onclick="removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition-colors" title="Remover"><i class="fas fa-times-circle text-lg"></i></button>` : '';
 
                 card.innerHTML = `
                     ${btnExcluir}
                     <div class="mb-3 pr-8">
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Fluxo/Automação</label>
-                        <input type="text" value="${auto.nome}" onchange="atualizarAutomacao(${auto.id}, 'nome', this.value)" placeholder="Ex: Onboarding via WhatsApp" class="w-full border border-slate-300 rounded text-sm p-2 focus:ring-1 focus:ring-secondary">
+                        <input type="text" value="${auto.nome}" onchange="atualizarAutomacao(${auto.id}, 'nome', this.value)" class="w-full border border-slate-300 rounded text-sm p-2 focus:ring-1 focus:ring-secondary">
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                            <label class="block text-xs text-slate-600 mb-1"><i class="far fa-clock"></i> Horas Est.</label>
+                            <label class="block text-xs text-slate-600 mb-1">Horas Est.</label>
                             <input type="number" value="${auto.horas}" oninput="atualizarAutomacao(${auto.id}, 'horas', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-center">
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-600 mb-1"><i class="fas fa-exclamation-triangle"></i> Complexidade</label>
+                            <label class="block text-xs text-slate-600 mb-1">Complexidade</label>
                             <select onchange="atualizarAutomacao(${auto.id}, 'complexidade', parseFloat(this.value))" class="w-full border border-slate-300 rounded text-sm p-2 bg-white">
                                 <option value="0" ${auto.complexidade === 0 ? 'selected' : ''}>Baixa (+0%)</option>
                                 <option value="0.15" ${auto.complexidade === 0.15 ? 'selected' : ''}>Média (+15%)</option>
@@ -321,21 +327,18 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-600 mb-1"><i class="fas fa-piggy-bank text-success"></i> Econ. Anual (R$)</label>
+                            <label class="block text-xs text-slate-600 mb-1">Econ. Anual (R$)</label>
                             <input type="number" value="${auto.economia}" oninput="atualizarAutomacao(${auto.id}, 'economia', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-right">
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
-            
-            calcular(); // Recalcula sempre que renderizar
+            calcular();
         }
 
-        // CRUD DAS AUTOMAÇÕES
         function adicionarAutomacao() {
-            const nova = { id: Date.now(), nome: `Nova Automação ${automacoes.length + 1}`, horas: 10, complexidade: 0.15, economia: 5000 };
-            automacoes.push(nova);
+            automacoes.push({ id: Date.now(), nome: `Nova Automação ${automacoes.length + 1}`, horas: 10, complexidade: 0.15, economia: 5000 });
             renderizarAutomacoes();
         }
 
@@ -349,51 +352,52 @@
             const index = automacoes.findIndex(a => a.id === id);
             if (index !== -1) {
                 automacoes[index][campo] = valor;
-                if(campo !== 'nome') calcular(); // Não precisa recalcular se mudar só o nome
+                if(campo !== 'nome') calcular();
             }
         }
 
-        // LÓGICA MATEMÁTICA PRINCIPAL
         function calcular() {
             try {
-                // Variáveis Globais (Configurações)
                 const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
                 const percFixo = parseFloat(document.getElementById('percFixo').value) || 0;
                 const percVariavel = parseFloat(document.getElementById('percVariavel').value) || 0;
                 const percLucro = parseFloat(document.getElementById('percLucro').value) || 0;
-                
-                // Variáveis Comerciais
                 const fatorCaptura = (parseFloat(document.getElementById('fatorCaptura').value) || 0) / 100;
                 const percManutencao = (parseFloat(document.getElementById('percManutencao').value) || 0) / 100;
 
-                // Markup
-                const somaPercentuais = percFixo + percVariavel + percLucro;
-                const markup = 1 + (somaPercentuais / 100);
+                const markup = 1 + ((percFixo + percVariavel + percLucro) / 100);
 
-                // Acumuladores do Pacote
                 let totalHoras = 0;
                 let totalComplexidadeValor = 0;
                 let totalEconomiaAnual = 0;
 
-                // Processar cada automação do carrinho
                 automacoes.forEach(auto => {
                     totalHoras += auto.horas;
                     totalEconomiaAnual += auto.economia;
-                    
-                    // Complexidade é calculada sobre o preço base DE CADA item
                     const precoBaseItem = (auto.horas * valorHora) * markup;
                     totalComplexidadeValor += (precoBaseItem * auto.complexidade);
                 });
 
-                // Cálculos Finais
                 const cmvGlobal = totalHoras * valorHora;
                 const pBaseGlobal = cmvGlobal * markup;
                 const valorEstrategicoGlobal = totalEconomiaAnual * fatorCaptura;
-                
                 const precoFinalSetup = pBaseGlobal + totalComplexidadeValor + valorEstrategicoGlobal;
                 const valorMRR = precoFinalSetup * percManutencao;
 
-                // Atualizar DOM
+                // Lógica da Forma de Pagamento
+                let parcela1 = precoFinalSetup;
+                let parcela2 = 0;
+                
+                if(formaPagamento === '50') {
+                    parcela1 = precoFinalSetup / 2;
+                    parcela2 = precoFinalSetup / 2;
+                    document.getElementById('lblTipoPagamento').innerText = '50% Sinal / 50% Entrega';
+                    document.getElementById('resParcelas').innerHTML = `Sinal: <span class="text-white">${formatCurrency(parcela1)}</span> <br> Entrega: <span class="text-white">${formatCurrency(parcela2)}</span>`;
+                } else {
+                    document.getElementById('lblTipoPagamento').innerText = '100% à vista no Início';
+                    document.getElementById('resParcelas').innerHTML = `Faturamento Único: <br><span class="text-white text-lg">${formatCurrency(parcela1)}</span>`;
+                }
+
                 document.getElementById('resHoras').innerText = `${totalHoras} h`;
                 document.getElementById('resCMV').innerText = formatCurrency(cmvGlobal);
                 document.getElementById('resMarkup').innerText = markup.toFixed(2) + 'x';
@@ -403,7 +407,6 @@
                 document.getElementById('resTotal').innerText = formatCurrency(precoFinalSetup);
                 document.getElementById('resMRR').innerHTML = `${formatCurrency(valorMRR)} <span class="text-xs text-slate-400 font-normal">/mês</span>`;
 
-                // Salvar estado para o Webhook
                 window.dadosCalculados = {
                     totais_pacote: {
                         horas: totalHoras,
@@ -415,46 +418,43 @@
                         valor_setup_total: precoFinalSetup,
                         valor_mrr_mensal: valorMRR
                     },
+                    pagamento_setup: {
+                        modalidade: formaPagamento === '100' ? '100% Início' : '50% Início e 50% Entrega',
+                        parcela_sinal: parcela1,
+                        parcela_entrega: parcela2
+                    },
                     parametros_usados: { valorHora, markup, fatorCaptura, percManutencao }
                 };
-
             } catch (error) {
                 console.error("Erro no cálculo: ", error);
             }
         }
 
-        // DISPARO DE WEBHOOKS (Orçamento ou Contrato)
         async function dispararWebhook(tipo) {
             const msgBox = document.getElementById('webhookMessage');
-            let btnId, webhookUrl;
+            msgBox.classList.add('hidden'); // Esconde mensagens antigas
 
-            // Define qual botão chamou e qual URL usar
-            if (tipo === 'orcamento') {
-                btnId = 'btnWebhookOrcamento';
-                webhookUrl = document.getElementById('urlOrcamento').value.trim();
-            } else {
-                btnId = 'btnWebhookContrato';
-                webhookUrl = document.getElementById('urlContrato').value.trim();
-            }
-
+            const btnId = tipo === 'orcamento' ? 'btnWebhookOrcamento' : 'btnWebhookContrato';
+            const urlId = tipo === 'orcamento' ? 'urlOrcamento' : 'urlContrato';
+            
             const btn = document.getElementById(btnId);
+            const webhookUrl = document.getElementById(urlId).value.trim();
 
-            if (!webhookUrl) {
-                mostrarNotificacao(`Aviso: Configure a URL do webhook de ${tipo.toUpperCase()} na aba Configurações.`, 'error');
-                mudarAba('configuracoes'); // Leva o usuário para a aba certa
+            // Validação 1: URL Vazia ou inválida
+            if (!webhookUrl || !webhookUrl.startsWith('http')) {
+                mostrarNotificacao(`ERRO DE CONFIGURAÇÃO: A URL informada para o webhook de ${tipo} é inválida. Vá na aba 'Configurações Base' e cole o link correto do seu n8n.`, 'error');
                 return;
             }
 
-            // Validação básica do cliente
+            // Validação 2: Dados do Cliente
             const clienteNome = document.getElementById('clienteNome').value.trim();
             if (!clienteNome) {
-                mostrarNotificacao('Aviso: Preencha pelo menos o Nome da Empresa antes de gerar.', 'error');
+                mostrarNotificacao('ERRO DE DADOS: Preencha pelo menos o "Nome da Empresa" antes de gerar a proposta.', 'error');
                 return;
             }
 
-            // Construir Payload Rica (Com o array de automações)
             const payload = {
-                tipo_disparo: tipo, // 'orcamento' ou 'contrato'
+                tipo_disparo: tipo,
                 data_geracao: new Date().toISOString(),
                 cliente: {
                     nome: clienteNome,
@@ -463,15 +463,13 @@
                     documento: document.getElementById('clienteDoc').value.trim(),
                     endereco: document.getElementById('clienteEndereco').value.trim()
                 },
-                escopo_projeto: automacoes, // Envia a lista detalhada
+                escopo_projeto: automacoes,
                 financeiro_consolidado: window.dadosCalculados
             };
 
-            // Estado de Loading UI
             const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processando...';
-            msgBox.classList.add('hidden');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Conectando ao n8n...';
 
             try {
                 const response = await fetch(webhookUrl, {
@@ -481,13 +479,14 @@
                 });
 
                 if (response.ok) {
-                    mostrarNotificacao(`✅ ${tipo === 'orcamento' ? 'Proposta enviada' : 'Contrato gerado'} com sucesso via n8n!`, 'success');
+                    mostrarNotificacao(`✅ SUCESSO! Dados enviados para o n8n (${tipo === 'orcamento' ? 'Proposta' : 'Contrato'}).`, 'success');
                 } else {
-                    mostrarNotificacao(`❌ Erro n8n (Status ${response.status}).`, 'error');
+                    mostrarNotificacao(`❌ ERRO NO SERVIDOR N8N (Status ${response.status}). O n8n rejeitou a requisição.`, 'error');
                 }
             } catch (error) {
-                mostrarNotificacao(`❌ Erro de conexão ao enviar Webhook.`, 'error');
-                console.error(error);
+                // Se cair aqui, geralmente é problema de CORS ou DNS
+                console.error("Erro completo do Fetch:", error);
+                mostrarNotificacao(`❌ ERRO DE CONEXÃO (CORS/REDE). O navegador bloqueou o envio. Certifique-se de que a opção "Respond to CORS" está ATIVADA no seu nó Webhook do n8n.`, 'error');
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
@@ -497,24 +496,21 @@
         function mostrarNotificacao(mensagem, tipo) {
             const msgBox = document.getElementById('webhookMessage');
             msgBox.innerText = mensagem;
-            msgBox.className = `p-3 rounded-lg text-center font-medium text-sm transition-all mt-3 ${tipo === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200'}`;
+            msgBox.className = `p-4 rounded-lg text-center font-bold text-sm transition-all shadow-sm mt-3 ${tipo === 'error' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-green-100 text-green-800 border border-green-300'}`;
+            msgBox.classList.remove('hidden');
         }
 
         function limparFormulario() {
-            if (confirm('Deseja limpar os dados do cliente e resetar as automações? As configurações de custo não serão perdidas.')) {
-                // Limpar campos cliente
+            if (confirm('Deseja limpar os dados do cliente e resetar as automações?')) {
                 ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco'].forEach(id => document.getElementById(id).value = '');
-                
-                // Resetar automações para 1 item padrão
                 automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 10, complexidade: 0.15, economia: 5000 }];
+                setFormaPagamento('100');
                 renderizarAutomacoes();
-                
                 document.getElementById('webhookMessage').classList.add('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        // Inicialização
         window.addEventListener('DOMContentLoaded', () => {
             renderizarAutomacoes();
         });
