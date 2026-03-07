@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Pro: Sistema Cloud V18</title>
+    <title>Calculadora Pro: Sistema Cloud V19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -121,7 +121,7 @@
                     <div class="bg-white rounded-xl shadow-sm border border-secondary p-6">
                         <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
                             <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo Híbrido (Projetos & SaaS)</h2>
-                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">1 Item</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">0 Item(s)</span>
                         </div>
                         
                         <div id="listaAutomacoes" class="space-y-4 mb-4"></div>
@@ -184,7 +184,7 @@
                                     </div>
                                 </div>
                                 <div class="bg-purple-50 p-2 rounded border border-purple-200">
-                                    <label class="block text-[10px] font-bold text-purple-800 mb-1">Captura ROI Mensal (Sua Fatia)</label>
+                                    <label class="block text-[10px] font-bold text-purple-800 mb-1">Captura ROI Mensal (Lucro Assinatura)</label>
                                     <div class="relative">
                                         <input type="number" id="fatorCapturaSaas" value="20" class="w-full border border-purple-300 rounded p-1.5 pr-6 text-sm font-bold text-purple-900" oninput="window.calcular()">
                                         <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-purple-500 text-xs">%</div>
@@ -353,7 +353,7 @@
                             <span id="resMarkup" class="font-mono text-blue-400 bg-blue-900/30 px-1 rounded">1.00x</span>
                         </div>
                         
-                        <!-- Breakdown do Markup (Fixas, Var, Lucro) -->
+                        <!-- Breakdown do Markup -->
                         <div class="pl-2 border-l-2 border-slate-600 space-y-1 my-1 py-1">
                             <div class="flex justify-between items-center text-slate-400">
                                 <span>└ Despesas Fixas:</span>
@@ -379,7 +379,6 @@
                             <span id="resTotalDev" class="font-mono">R$ 0,00</span>
                         </div>
                         
-                        <!-- ESCLARECIMENTO DA DIVISÃO (CRUCIAL PARA ENTENDER O PREÇO DO SETUP) -->
                         <div class="flex justify-between text-[10px] text-slate-400 px-1 mt-1">
                             <span>➜ Convertido em Setup: <strong id="resDevSetup" class="text-blue-300 font-mono">R$ 0,00</strong></span>
                             <span>➜ Amortizado SaaS: <strong id="resDevSaas" class="text-purple-300 font-mono">R$ 0,00</strong></span>
@@ -407,7 +406,7 @@
                     <!-- Divider -->
                     <div class="border-t border-dashed border-slate-600 my-4"></div>
 
-                    <!-- MRR Section (Assinaturas e SLA separados) -->
+                    <!-- MRR Section -->
                     <div class="mt-auto">
                         <div class="flex justify-between items-end mb-3">
                             <span class="text-xs text-slate-400 font-bold uppercase tracking-wider"><i class="fas fa-sync-alt mr-1"></i> Faturamento Mensal</span>
@@ -415,7 +414,7 @@
                         </div>
                         
                         <div class="space-y-2">
-                            <!-- Caixa SLA (Setup) -->
+                            <!-- Caixa SLA -->
                             <div id="boxSLA" class="bg-blue-900/20 border border-blue-800/50 rounded p-2.5 flex justify-between items-center transition-all">
                                 <div>
                                     <span class="block text-[10px] text-blue-400 font-bold uppercase">SLA Manutenção</span>
@@ -424,7 +423,7 @@
                                 <span id="resValorSLA" class="font-mono text-blue-200 text-sm font-semibold">R$ 0,00</span>
                             </div>
                             
-                            <!-- Caixa SaaS (Assinaturas) -->
+                            <!-- Caixa SaaS -->
                             <div id="boxSaaS" class="bg-purple-900/20 border border-purple-800/50 rounded p-2.5 flex justify-between items-center transition-all">
                                 <div>
                                     <span class="block text-[10px] text-purple-400 font-bold uppercase">Licença / Assinatura</span>
@@ -453,8 +452,8 @@
             storageBucket: "calculadora-automacao.firebasestorage.app",
             messagingSenderId: "1097598113223",
             appId: "1:1097598113223:web:820b0514e989f6ca6475e2",
-            measurementId: "G-6MPXBVYG98"
-        };
+            measurementId: "G-6MPXBVYG98"};
+            
         let app, auth, db, currentUser = null; let modoOffline = false; 
 
         let historicoBD = JSON.parse(localStorage.getItem('crm_historico')) || [];
@@ -464,7 +463,8 @@
         catch(e) { modoOffline = true; }
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        let automacoes = [{ id: Date.now(), nome: 'Fluxo Base', horas: 15, complexidade: 0.15, economia: 1000, modelo: 'tradicional', infra: 0 }];
+        // ESTADOS DA CALCULADORA (Inicia 100% Zerado)
+        let automacoes = [];
         let formaPagamento = '100'; let modeloNovoProduto = 'tradicional'; 
         let idProdutoEmEdicao = null;
 
@@ -648,6 +648,7 @@
             
             if(!nome || isNaN(horas) || isNaN(economia)) return alert("Preencha Nome, Horas e Economia.");
             const btn = document.getElementById('btnSalvarProd'); 
+            const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
             
             const itemData = { nome, horas, economia, complexidade, modelo: modeloNovoProduto, infra };
@@ -719,7 +720,6 @@
             btn.innerHTML = originalHtml;
         };
 
-        // Correção das funções de Excluir com try...catch para evitar quebra silenciosa
         window.excluirProduto = async (docId) => { 
             if(confirm("Tem certeza que deseja apagar este produto da base de dados?")) { 
                 if(!modoOffline && currentUser) {
@@ -782,11 +782,21 @@
             const container = document.getElementById('listaAutomacoes'); container.innerHTML = '';
             document.getElementById('contadorAutomacoes').innerText = `${automacoes.length} Item(s)`;
 
+            if (automacoes.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50">
+                        <i class="fas fa-box-open text-3xl mb-2"></i>
+                        <p class="font-semibold text-slate-500">Nenhum item no escopo.</p>
+                        <p class="text-xs mt-1">Adicione um item manual ou importe da sua base.</p>
+                    </div>
+                `;
+            }
+
             automacoes.forEach((auto) => {
                 const card = document.createElement('div'); 
                 const bgType = auto.modelo === 'saas' ? 'bg-purple-50/50 border-purple-200' : 'bg-slate-50 border-slate-200';
                 card.className = `${bgType} rounded-lg p-4 border relative group transition-colors`;
-                let btnExcluir = automacoes.length > 1 ? `<button onclick="window.removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500"><i class="fas fa-times-circle text-lg"></i></button>` : '';
+                let btnExcluir = `<button onclick="window.removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500"><i class="fas fa-times-circle text-lg"></i></button>`;
                 let displayInfra = auto.modelo === 'saas' ? 'block' : 'hidden';
 
                 card.innerHTML = `
@@ -834,7 +844,7 @@
         };
 
         window.adicionarAutomacao = () => { automacoes.push({ id: Date.now(), nome: `Nova Automação`, horas: 10, complexidade: 0.15, economia: 1000, modelo: 'tradicional', infra: 0 }); window.renderizarAutomacoes(); };
-        window.removerAutomacao = (id) => { if (automacoes.length > 1) { automacoes = automacoes.filter(a => a.id !== id); window.renderizarAutomacoes(); } };
+        window.removerAutomacao = (id) => { automacoes = automacoes.filter(a => a.id !== id); window.renderizarAutomacoes(); };
         window.atualizarAutomacaoNum = (id, campo, valor) => { const idx = automacoes.findIndex(a => a.id === id); if (idx !== -1) { automacoes[idx][campo] = valor; window.calcular(); } };
         window.atualizarAutomacaoStr = (id, campo, valor) => { const idx = automacoes.findIndex(a => a.id === id); if (idx !== -1) { automacoes[idx][campo] = valor; if(campo === 'modelo') window.renderizarAutomacoes(); else window.calcular(); } };
         window.atualizarAutomacaoMoeda = (id, campo, valorStr) => { const idx = automacoes.findIndex(a => a.id === id); if (idx !== -1) { automacoes[idx][campo] = parseCurrency(valorStr); window.calcular(); } };
@@ -989,7 +999,7 @@
 
         window.limparFormulario = () => {
             ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('shake-error'); });
-            automacoes = [{ id: Date.now(), nome: 'Fluxo Base', horas: 15, complexidade: 0.15, economia: 1000, modelo: 'tradicional', infra: 0 }];
+            automacoes = [];
             document.getElementById('webhookMessage').classList.add('hidden'); window.renderizarAutomacoes(); window.scrollTo(0,0);
         };
 
