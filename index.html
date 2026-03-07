@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Pro: Consultoria de Automação V4</title>
+    <title>Calculadora Pro: Sistema Cloud V10</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -15,6 +15,7 @@
                         secondary: '#2563EB',
                         accent: '#F59E0B',
                         success: '#10B981',
+                        purple_brand: '#8B5CF6'
                     }
                 }
             }
@@ -28,32 +29,59 @@
         input[type="number"] { -moz-appearance: textfield; }
         .fade-in { animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-down { animation: slideDown 0.3s ease-out forwards; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-slate-800 antialiased p-4 md:p-8">
+<body class="text-slate-800 antialiased">
 
-    <div class="max-w-7xl mx-auto">
+    <!-- TELA DE LOGIN (Fixo sobre tudo) -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-primary flex flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center fade-in">
+            <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-lock text-3xl text-secondary"></i>
+            </div>
+            <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Acesso Restrito</h1>
+            <p class="text-slate-500 mb-8">Faça login para acessar seus orçamentos, produtos e histórico em nuvem.</p>
+            
+            <button id="btnEntrar" onclick="window.realizarLogin()" class="w-full bg-secondary hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center text-lg">
+                <i class="fas fa-sign-in-alt mr-2"></i> Autenticar no Sistema
+            </button>
+            <div id="loginMsg" class="mt-4 text-sm text-red-500 hidden"></div>
+        </div>
+    </div>
+
+    <!-- TELA PRINCIPAL DO APP -->
+    <div id="appScreen" class="hidden w-full max-w-7xl mx-auto p-4 md:p-8">
         
         <header class="mb-6 text-center md:text-left flex flex-col md:flex-row justify-between items-center">
             <div>
-                <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-2"><i class="fas fa-robot text-secondary mr-2"></i> Orçamentos</h1>
-                <p class="text-slate-500">Geração de Propostas e Contratos Automatizados</p>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-primary mb-1"><i class="fas fa-robot text-secondary mr-2"></i> CRM Orçamentos</h1>
+                <p class="text-slate-500 text-sm">Logado como: <span id="userEmailDisplay" class="font-bold text-secondary">Consultor</span> <button onclick="window.fazerLogout()" class="ml-2 text-xs text-red-500 underline hover:text-red-700">Sair do Sistema</button></p>
             </div>
             
-            <div class="mt-4 md:mt-0 flex space-x-1 bg-white rounded-lg p-1 shadow-sm border border-slate-200">
-                <button onclick="mudarAba('principal')" id="btnAbaPrincipal" class="tab-btn active px-4 py-2 rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
-                    <i class="fas fa-file-invoice-dollar mr-1"></i> Novo Orçamento
+            <div class="mt-4 md:mt-0 flex flex-wrap justify-center space-x-1 bg-white rounded-lg p-1 shadow-sm border border-slate-200">
+                <button onclick="window.mudarAba('principal')" id="btnAbaPrincipal" class="tab-btn active px-3 py-2 text-sm md:text-base rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
+                    <i class="fas fa-file-invoice-dollar mr-1"></i> Orçamento
                 </button>
-                <button onclick="mudarAba('configuracoes')" id="btnAbaConfig" class="tab-btn px-4 py-2 rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
-                    <i class="fas fa-cog mr-1"></i> Configurações Base
+                <button onclick="window.mudarAba('templates')" id="btnAbaTemplates" class="tab-btn px-3 py-2 text-sm md:text-base rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
+                    <i class="fas fa-box-open mr-1"></i> Produtos
+                </button>
+                <button onclick="window.mudarAba('historico')" id="btnAbaHistorico" class="tab-btn px-3 py-2 text-sm md:text-base rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
+                    <i class="fas fa-history mr-1"></i> Histórico
+                </button>
+                <button onclick="window.mudarAba('configuracoes')" id="btnAbaConfig" class="tab-btn px-3 py-2 text-sm md:text-base rounded-md transition-colors hover:bg-slate-50 focus:outline-none">
+                    <i class="fas fa-cog mr-1"></i> Config
                 </button>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 relative items-start">
             
-            <div class="lg:col-span-2 space-y-6">
+            <!-- PAINEL ESQUERDO (Conteúdo Dinâmico) -->
+            <div id="painelEsquerdo" class="lg:col-span-2 space-y-6 transition-all duration-300">
                 
+                <!-- ABA PRINCIPAL (Cálculos) -->
                 <div id="abaPrincipal" class="fade-in space-y-6">
                     
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
@@ -69,11 +97,11 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Telefone/WhatsApp</label>
-                                <input type="tel" id="clienteTelefone" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                                <input type="tel" id="clienteTelefone" oninput="window.mascaraTelefone(event)" placeholder="(00) 00000-0000" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">CNPJ/CPF</label>
-                                <input type="text" id="clienteDoc" placeholder="00.000.000/0001-00" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">CNPJ ou CPF</label>
+                                <input type="text" id="clienteDoc" oninput="window.mascaraCpfCnpj(event)" placeholder="000.000.000-00 ou 00.000.000/0000-00" class="w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary transition-colors text-sm">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Endereço Completo</label>
@@ -84,110 +112,237 @@
 
                     <div class="bg-white rounded-xl shadow-sm border border-secondary p-6">
                         <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                            <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo do Projeto (Automações)</h2>
+                            <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo do Projeto</h2>
                             <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">1 Item</span>
                         </div>
                         
                         <div id="listaAutomacoes" class="space-y-4 mb-4"></div>
 
-                        <button onclick="adicionarAutomacao()" class="w-full border-2 border-dashed border-slate-300 text-slate-500 hover:border-secondary hover:text-secondary font-semibold py-3 rounded-xl transition-colors flex items-center justify-center">
-                            <i class="fas fa-plus-circle mr-2"></i> Adicionar Nova Automação ao Pacote
-                        </button>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <button onclick="window.adicionarAutomacao()" class="flex-1 border-2 border-dashed border-slate-300 text-slate-500 hover:border-secondary hover:text-secondary font-semibold py-3 rounded-xl transition-colors flex items-center justify-center">
+                                <i class="fas fa-plus mr-2"></i> Criar do Zero
+                            </button>
+                            <button onclick="window.mudarAba('templates')" class="flex-1 bg-slate-100 border border-slate-200 text-secondary hover:bg-slate-200 font-semibold py-3 rounded-xl transition-colors flex items-center justify-center">
+                                <i class="fas fa-box-open mr-2"></i> Puxar Produto Cadastrado
+                            </button>
+                        </div>
                     </div>
 
+                    <!-- FATORES COMERCIAIS (SaaS vs Tradicional) -->
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-                        <h2 class="text-lg font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-chart-line text-success mr-2"></i> Fatores Comerciais & Pagamento</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 border-b border-slate-100 pb-3">
+                            <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-hand-holding-usd text-success mr-2"></i> Modelo de Negócio</h2>
                             
-                            <!-- Nova Condição de Pagamento -->
+                            <div class="bg-slate-100 p-1 rounded-lg inline-flex mt-3 sm:mt-0 border border-slate-200 w-full sm:w-auto">
+                                <button id="btnModeloTradicional" onclick="window.setModeloNegocio('tradicional')" class="flex-1 sm:flex-none py-1.5 px-4 rounded-md bg-white shadow-sm font-bold text-secondary text-sm transition-all">Projeto (Setup + SLA)</button>
+                                <button id="btnModeloSaas" onclick="window.setModeloNegocio('saas')" class="flex-1 sm:flex-none py-1.5 px-4 rounded-md text-slate-500 hover:text-slate-700 font-semibold text-sm transition-all">Assinatura (SaaS)</button>
+                            </div>
+                        </div>
+
+                        <!-- LÓGICA TRADICIONAL -->
+                        <div id="blocoTradicional" class="grid grid-cols-1 md:grid-cols-2 gap-6 slide-down">
                             <div class="md:col-span-2 bg-slate-50 border border-slate-200 p-4 rounded-lg">
-                                <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fas fa-handshake mr-1 text-slate-500"></i> Condição de Pagamento do Setup</label>
+                                <label class="block text-sm font-bold text-slate-700 mb-3"><i class="fas fa-money-check-alt mr-1 text-slate-500"></i> Condição de Pagamento do Setup</label>
                                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                                    <button id="btnPag100" onclick="setFormaPagamento('100')" class="flex-1 py-3 px-4 rounded-lg bg-secondary text-white font-bold shadow-md transition-all transform hover:scale-[1.02]">
+                                    <button id="btnPag100" onclick="window.setFormaPagamento('100')" class="flex-1 py-3 px-2 rounded-lg bg-secondary text-white font-bold shadow-md transition-all text-sm">
                                         100% no Início
                                     </button>
-                                    <button id="btnPag50" onclick="setFormaPagamento('50')" class="flex-1 py-3 px-4 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50">
-                                        50% Início / 50% na Metade
+                                    <button id="btnPag50" onclick="window.setFormaPagamento('50')" class="flex-1 py-3 px-2 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50 text-sm">
+                                        50% Início / 50% Metade
                                     </button>
                                 </div>
                             </div>
-
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                <label class="block text-sm font-bold text-slate-700 mb-1">Captura de Valor (ROI)</label>
+                                <label class="block text-sm font-bold text-slate-700 mb-1">Prêmio ROI Anual</label>
                                 <div class="relative">
-                                    <input type="number" id="fatorCaptura" value="10" class="w-full border border-slate-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-secondary focus:border-secondary font-bold text-lg" oninput="calcular()">
+                                    <input type="number" id="fatorCapturaTrad" value="10" class="w-full border border-slate-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-secondary font-bold text-lg" oninput="window.calcular()">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">%</div>
                                 </div>
+                                <p class="text-[10px] text-slate-500 mt-1 uppercase">Cobrado no Setup</p>
                             </div>
                             <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
                                 <label class="block text-sm font-bold text-blue-800 mb-1">Manutenção Mensal (SLA)</label>
                                 <div class="relative">
-                                    <input type="number" id="percManutencao" value="15" class="w-full border border-blue-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold text-lg text-blue-900" oninput="calcular()">
+                                    <input type="number" id="percManutencaoTrad" value="15" class="w-full border border-blue-300 rounded-lg p-2.5 pr-8 focus:ring-2 focus:ring-blue-500 font-bold text-lg text-blue-900" oninput="window.calcular()">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-blue-500">%</div>
                                 </div>
+                                <p class="text-[10px] text-blue-600 mt-1 uppercase">% sobre o valor do Setup</p>
                             </div>
                         </div>
+
+                        <!-- LÓGICA SAAS -->
+                        <div id="blocoSaas" class="hidden grid-cols-1 md:grid-cols-3 gap-4 slide-down">
+                            <div class="md:col-span-3 bg-purple-50 border border-purple-200 p-4 rounded-lg flex items-center text-sm text-purple-800 mb-2">
+                                <i class="fas fa-info-circle text-xl mr-3"></i>
+                                <div>No modelo de <b>Assinatura (SaaS)</b> o Setup cobrado é R$ 0,00. O seu lucro advém da captura de parte da economia mensal do cliente, somada ao seu custo base amortizado pelo contrato.</div>
+                            </div>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Tempo Contrato (Meses)</label>
+                                <div class="relative">
+                                    <input type="number" id="mesesContratoSaas" value="12" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-purple_brand font-bold text-slate-800" oninput="window.calcular()">
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400 text-xs">M</div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1 leading-tight">Para amortizar o dev.</p>
+                            </div>
+                            
+                            <div class="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                                <label class="block text-xs font-bold text-purple-800 mb-1">ROI Mensal (Sua Fatia)</label>
+                                <div class="relative">
+                                    <input type="number" id="fatorCapturaSaas" value="20" class="w-full border border-purple-300 rounded-lg p-2 pr-6 focus:ring-2 focus:ring-purple_brand font-bold text-purple-900" oninput="window.calcular()">
+                                    <div class="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none text-purple-500 text-xs">%</div>
+                                </div>
+                                <p class="text-[10px] text-purple-600 mt-1 leading-tight">% da economia mensal</p>
+                            </div>
+                            
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Custo Fixo Infra (R$)</label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-slate-400 text-xs">R$</div>
+                                    <input type="number" id="custoInfraSaas" value="150" class="pl-8 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-purple_brand font-bold text-slate-800" oninput="window.calcular()">
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1 leading-tight">Servidores, APIs, etc.</p>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 space-y-3">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button id="btnWebhookOrcamento" onclick="dispararWebhook('orcamento')" class="w-full bg-primary hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center">
-                                <i class="fas fa-paper-plane mr-2 text-secondary"></i> Enviar Orçamento
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <button onclick="window.dispararWebhook('orcamento')" id="btnWebhookOrcamento" class="w-full bg-primary hover:bg-slate-800 text-white font-bold py-3 px-2 rounded-lg shadow transition flex items-center justify-center text-sm">
+                                <i class="fas fa-paper-plane mr-2 text-secondary"></i> Enviar Proposta
                             </button>
-                            <button id="btnWebhookContrato" onclick="dispararWebhook('contrato')" class="w-full bg-success hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-lg shadow transition flex items-center justify-center">
+                            <button onclick="window.dispararWebhook('contrato')" id="btnWebhookContrato" class="w-full bg-success hover:bg-emerald-600 text-white font-bold py-3 px-2 rounded-lg shadow transition flex items-center justify-center text-sm">
                                 <i class="fas fa-file-signature mr-2"></i> Gerar Contrato
                             </button>
+                            <button onclick="window.salvarContratoBD()" id="btnWebhookFechado" class="w-full bg-purple_brand hover:bg-purple-700 text-white font-bold py-3 px-2 rounded-lg shadow transition flex items-center justify-center text-sm border-2 border-purple-800">
+                                <i class="fas fa-handshake mr-2"></i> Contrato Fechado!
+                            </button>
                         </div>
-                        <button onclick="limparFormulario()" class="w-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center text-sm">
+                        <button onclick="window.limparFormulario()" class="w-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center text-sm">
                             <i class="fas fa-eraser mr-2"></i> Limpar Dados do Cliente
                         </button>
                         <div id="webhookMessage" class="hidden p-4 rounded-lg text-center font-bold text-sm transition-all shadow-sm"></div>
                     </div>
-
                 </div>
 
+                <!-- ABA TEMPLATES (Produtos) -->
+                <div id="abaTemplates" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-t-4 border-t-secondary">
+                        <h2 class="text-lg font-bold text-slate-800 mb-4"><i class="fas fa-plus-circle mr-2 text-secondary"></i> Cadastrar Novo Produto Manualmente</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Nome do Produto</label>
+                                <input type="text" id="novoProdNome" placeholder="Ex: Onboarding via WhatsApp" class="w-full border border-slate-300 rounded p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Horas Est.</label>
+                                <input type="number" id="novoProdHoras" placeholder="Ex: 15" class="w-full border border-slate-300 rounded p-2 text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Econ. Mensal (R$)</label>
+                                <input type="number" id="novoProdEcon" placeholder="Ex: 1500" class="w-full border border-slate-300 rounded p-2 text-sm">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-500 mb-1">Nível de Complexidade</label>
+                                <select id="novoProdComp" class="w-full border border-slate-300 rounded p-2 text-sm bg-white">
+                                    <option value="0">Baixa (+0%)</option>
+                                    <option value="0.15">Média (+15%)</option>
+                                    <option value="0.30">Alta (+30%)</option>
+                                    <option value="0.50">Extrema (+50%)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2 flex items-end">
+                                <button onclick="window.salvarProdutoBD()" id="btnSalvarProd" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded transition">
+                                    Salvar no Banco de Dados
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <h2 class="text-xl font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fas fa-cubes mr-2 text-slate-400"></i> Meus Produtos Cadastrados</h2>
+                        <div id="gridTemplates" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Injetado via Firestore -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABA HISTÓRICO -->
+                <div id="abaHistorico" class="hidden fade-in space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-purple_brand">
+                        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-2">
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-history mr-2 text-purple_brand"></i> Histórico em Nuvem</h2>
+                                <p class="text-sm text-slate-500">Contratos fechados e salvos no Firestore.</p>
+                            </div>
+                            <span class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full" id="contadorHistorico">Carregando...</span>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-slate-600">
+                                <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-bold">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg">Data</th>
+                                        <th class="px-4 py-3">Cliente</th>
+                                        <th class="px-4 py-3">Valor Setup</th>
+                                        <th class="px-4 py-3">MRR (Mensal)</th>
+                                        <th class="px-4 py-3 text-center">Modelo</th>
+                                        <th class="px-4 py-3 rounded-tr-lg text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaHistorico" class="divide-y divide-slate-100">
+                                    <!-- Injetado via Firestore -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABA CONFIGURAÇÕES -->
                 <div id="abaConfiguracoes" class="hidden fade-in space-y-6">
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-accent">
-                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-sliders-h mr-2"></i> Parâmetros da Consultoria</h2>
-                        
+                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-sliders-h mr-2"></i> Parâmetros Fixos</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-1">Custo da Hora Técnica (R$)</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">R$</div>
-                                    <input type="number" id="valorHora" value="130" class="pl-10 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary" oninput="calcular()">
+                                    <input type="number" id="valorHora" value="130" class="pl-10 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-secondary focus:border-secondary" oninput="window.calcular()">
                                 </div>
                             </div>
-                            
                             <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-100">
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1">Despesas Fixas (%)</label>
-                                    <input type="number" id="percFixo" value="15" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="calcular()">
+                                    <input type="number" id="percFixo" value="15" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="window.calcular()">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1">Impostos/Var. (%)</label>
-                                    <input type="number" id="percVariavel" value="12" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="calcular()">
+                                    <input type="number" id="percVariavel" value="12" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="window.calcular()">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-slate-600 mb-1">Margem de Lucro (%)</label>
-                                    <input type="number" id="percLucro" value="25" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="calcular()">
+                                    <input type="number" id="percLucro" value="25" class="w-full border border-slate-300 rounded-md p-2 text-sm" oninput="window.calcular()">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 border-l-4 border-l-secondary">
-                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-link mr-2"></i> Links dos Webhooks (n8n)</h2>
-                        <p class="text-sm text-red-500 font-semibold mb-6">Importante: No n8n, você deve ativar a opção "Respond to CORS" no seu nó de Webhook para não dar erro.</p>
-                        
+                        <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-link mr-2"></i> Links Webhooks (n8n)</h2>
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-1">URL: Proposta Comercial (Orçamento)</label>
-                                <input type="url" id="urlOrcamento" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/e719e067-1b0b-4490-af01-8ba23d116ae5" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-secondary">
+                                <label class="block text-sm font-bold text-slate-700 mb-1">URL: Proposta Comercial</label>
+                                <input type="url" id="urlOrcamento" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/e719e067-1b0b-4490-af01-8ba23d116ae5" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50">
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-slate-700 mb-1">URL: Geração de Contrato</label>
-                                <input type="url" id="urlContrato" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/ca410092-9808-45c3-841b-caebe48f440f" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-success">
+                                <input type="url" id="urlContrato" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/ca410092-9808-45c3-841b-caebe48f440f" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50">
+                            </div>
+                            <div class="pt-2 border-t border-slate-200">
+                                <label class="block text-sm font-bold text-purple_brand mb-1">URL: Contrato Fechado (CRM Opcional)</label>
+                                <input type="url" id="urlFechado" placeholder="URL do webhook n8n para registrar venda" class="w-full border border-purple-200 rounded-lg p-2.5 font-mono text-sm bg-purple-50">
                             </div>
                         </div>
                     </div>
@@ -195,55 +350,34 @@
 
             </div>
 
-            <div class="lg:col-span-1">
-                <div class="bg-primary text-white rounded-xl shadow-2xl p-6 lg:sticky lg:top-8 border-t-4 border-accent">
+            <!-- PAINEL DIREITO (Resumo Pegajoso / Sticky) -->
+            <div id="painelResumo" class="lg:col-span-1 block transition-all duration-300 sticky top-8 self-start z-10">
+                <div id="cardResumo" class="bg-primary text-white rounded-xl shadow-2xl p-6 border-t-4 border-accent transition-colors duration-500">
                     <h2 class="text-xl font-bold mb-4 border-b border-slate-700 pb-3 flex items-center justify-between">
                         Resumo do Pacote
-                        <i class="fas fa-calculator text-slate-400"></i>
+                        <i id="iconeResumo" class="fas fa-calculator text-slate-400"></i>
                     </h2>
 
-                    <div class="space-y-3 mb-6">
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">Total de Horas:</span>
-                            <span id="resHoras" class="font-mono">0 h</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">Custo Direto (Tempo):</span>
-                            <span id="resCMV" class="font-mono">R$ 0,00</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">Índice Markup (Mult.):</span>
-                            <span id="resMarkup" class="font-mono text-secondary bg-blue-900/30 px-2 py-0.5 rounded">0.00x</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-slate-700 pb-3 pt-1">
-                            <span class="text-slate-200 font-semibold text-sm">Preço Base Global:</span>
-                            <span id="resPBase" class="font-mono font-semibold">R$ 0,00</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-slate-400">+ Complexidade/Risco:</span>
-                            <span id="resComplex" class="font-mono text-red-400">+ R$ 0,00</span>
-                        </div>
-                        <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-3">
-                            <span class="text-slate-400">+ Prêmio ROI:</span>
-                            <span id="resEstrategico" class="font-mono text-success">+ R$ 0,00</span>
-                        </div>
+                    <!-- Linhas dinâmicas -->
+                    <div id="linhasResumo" class="space-y-3 mb-6">
+                        <!-- Injetado via JS de acordo com o modelo -->
                     </div>
 
+                    <!-- Destaque Setup -->
                     <div class="bg-slate-800 rounded-lg p-5 mb-2 border border-slate-700 shadow-inner">
-                        <span class="block text-slate-400 text-xs mb-1 uppercase tracking-wider text-center font-semibold">Setup Total (Implementação)</span>
+                        <span id="lblDestaqueSetup" class="block text-slate-400 text-xs mb-1 uppercase tracking-wider text-center font-semibold">Setup Total (Implementação)</span>
                         <div id="resTotal" class="text-3xl font-bold text-accent text-center mt-1 drop-shadow-md">R$ 0,00</div>
                     </div>
 
-                    <!-- Bloco Condição de Pagamento Refletida -->
+                    <!-- Bloco Parcelas -->
                     <div id="blocoParcelas" class="bg-black/30 rounded-lg p-3 mb-4 border border-slate-700/50 text-center">
-                        <span class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Forma de Pagamento: <span id="lblTipoPagamento" class="text-white">100% à vista</span></span>
-                        <div id="resParcelas" class="text-sm font-semibold text-slate-200">
-                            <!-- Injetado por JS -->
-                        </div>
+                        <span class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Pagamento Setup: <span id="lblTipoPagamento" class="text-white">100% à vista</span></span>
+                        <div id="resParcelas" class="text-sm font-semibold text-slate-200"></div>
                     </div>
 
-                    <div class="bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-4 border border-blue-700/50">
-                        <span class="block text-blue-300 text-sm mb-2 font-bold"><i class="fas fa-lock mr-1"></i> Manutenção e Acompanhamento</span>
+                    <!-- Destaque MRR -->
+                    <div id="cardMRR" class="bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-4 border border-blue-700/50 transition-all duration-500">
+                        <span id="lblDestaqueMRR" class="block text-blue-300 text-sm mb-2 font-bold"><i class="fas fa-lock mr-1"></i> Manutenção / SLA</span>
                         <div class="flex justify-between items-center bg-black/20 p-2 rounded border border-white/5">
                             <span class="text-slate-300 text-sm">Mensalidade:</span>
                             <span id="resMRR" class="font-mono font-bold text-lg text-white">R$ 0,00</span>
@@ -255,71 +389,309 @@
         </div>
     </div>
 
-    <script>
-        let automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 20, complexidade: 0.15, economia: 20000 }];
-        let formaPagamento = '100'; // '100' ou '50'
+    <!-- SCRIPT DE LÓGICA E FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyCihToyLV62N-CPg2KRutI0lJ137RxbOro",
+            authDomain: "calculadora-automacao.firebaseapp.com",
+            projectId: "calculadora-automacao",
+            storageBucket: "calculadora-automacao.firebasestorage.app",
+            messagingSenderId: "1097598113223",
+            appId: "1:1097598113223:web:820b0514e989f6ca6475e2",
+            measurementId: "G-6MPXBVYG98"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let currentUser = null;
+
+        // ESTADOS DA CALCULADORA
+        let automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 20, complexidade: 0.15, economia: 1000 }];
+        let formaPagamento = '100'; 
+        let modeloNegocio = 'tradicional'; 
+        let produtosDaNuvem = [];
 
         const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
-        function mudarAba(abaDestino) {
-            const btnPrincipal = document.getElementById('btnAbaPrincipal');
-            const btnConfig = document.getElementById('btnAbaConfig');
-            const abaPrincipal = document.getElementById('abaPrincipal');
-            const abaConfiguracoes = document.getElementById('abaConfiguracoes');
+        // --- FUNÇÕES DE MÁSCARA AUTOMÁTICA ---
+        window.mascaraTelefone = (event) => {
+            let input = event.target;
+            let v = input.value.replace(/\D/g, ''); // Remove tudo o que não é dígito
+            if (v.length > 11) v = v.slice(0, 11);
+            
+            if (v.length > 2) {
+                v = v.replace(/^(\d{2})(\d)/g, '($1) $2'); // Coloca parênteses
+            }
+            if (v.length > 9) {
+                v = v.replace(/(\d{5})(\d)/, '$1-$2'); // Coloca hífen para celular (9 dígitos)
+            } else if (v.length > 8) {
+                v = v.replace(/(\d{4})(\d)/, '$1-$2'); // Coloca hífen para fixo (8 dígitos)
+            }
+            input.value = v;
+        };
+
+        window.mascaraCpfCnpj = (event) => {
+            let input = event.target;
+            let v = input.value.replace(/\D/g, ''); // Remove tudo o que não é dígito
+            if (v.length > 14) v = v.slice(0, 14);
+
+            if (v.length <= 11) {
+                // Formato CPF
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else {
+                // Formato CNPJ
+                v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            input.value = v;
+        };
+
+        // --- AUTENTICAÇÃO E FIREBASE ---
+        window.realizarLogin = async () => {
+            const btn = document.getElementById('btnEntrar'); btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Autenticando...';
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { await signInWithCustomToken(auth, __initial_auth_token); } 
+                else { await signInAnonymously(auth); }
+            } catch (error) {
+                document.getElementById('loginMsg').innerText = "Erro ao conectar."; document.getElementById('loginMsg').classList.remove('hidden');
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Autenticar';
+            }
+        };
+        window.fazerLogout = () => { signOut(auth); };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                escutarProdutosBD(); escutarHistoricoBD(); window.calcular();
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+            }
+        });
+
+        function escutarProdutosBD() {
+            if (!currentUser) return;
+            onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), (snapshot) => {
+                produtosDaNuvem = []; snapshot.forEach((doc) => { produtosDaNuvem.push({ id_db: doc.id, ...doc.data() }); });
+                renderizarProdutosDaNuvem();
+            });
+        }
+
+        function escutarHistoricoBD() {
+            if (!currentUser) return;
+            onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), (snapshot) => {
+                const tbody = document.getElementById('tabelaHistorico'); tbody.innerHTML = '';
+                let count = 0; const contratos = [];
+                snapshot.forEach(doc => contratos.push({ id_db: doc.id, ...doc.data() }));
+                contratos.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+                contratos.forEach((contrato) => {
+                    count++;
+                    const badgeModelo = contrato.modelo === 'saas' ? '<span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-1 rounded">SaaS</span>' : '<span class="bg-blue-100 text-blue-800 text-[10px] font-bold px-2 py-1 rounded">Setup</span>';
+                    const row = document.createElement('tr'); row.className = 'hover:bg-slate-50 transition-colors';
+                    row.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap">${new Date(contrato.data).toLocaleDateString('pt-BR')}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-800">${contrato.cliente}</td>
+                        <td class="px-4 py-3 text-slate-500">${formatCurrency(contrato.valor_setup)}</td>
+                        <td class="px-4 py-3 text-slate-700 font-bold">${formatCurrency(contrato.valor_mrr)}</td>
+                        <td class="px-4 py-3 text-center">${badgeModelo}</td>
+                        <td class="px-4 py-3 text-center"><button onclick="window.excluirHistoricoBD('${contrato.id_db}')" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                document.getElementById('contadorHistorico').innerText = `${count} Contrato(s)`;
+                if(count === 0) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-400">Nenhum contrato no histórico.</td></tr>';
+            });
+        }
+
+        window.salvarProdutoBD = async () => {
+            if (!currentUser) return;
+            const nome = document.getElementById('novoProdNome').value; const horas = parseFloat(document.getElementById('novoProdHoras').value);
+            const economia = parseFloat(document.getElementById('novoProdEcon').value); const complexidade = parseFloat(document.getElementById('novoProdComp').value);
+            if(!nome || isNaN(horas) || isNaN(economia)) return alert("Preencha todos os campos.");
+
+            const btn = document.getElementById('btnSalvarProd'); btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), { nome, horas, economia, complexidade, criadoEm: new Date().toISOString() });
+                ['novoProdNome', 'novoProdHoras', 'novoProdEcon'].forEach(id => document.getElementById(id).value = '');
+            } catch(e) { console.error(e); }
+            btn.innerHTML = 'Salvar no Banco de Dados';
+        };
+
+        window.salvarProdutoRapido = async (idLocalAutomacao) => {
+            if (!currentUser) return alert("Faça login para salvar na nuvem.");
+            const auto = automacoes.find(a => a.id === idLocalAutomacao); if (!auto) return;
+            const btn = document.getElementById(`btnSaveProd_${idLocalAutomacao}`);
+            const originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), { nome: auto.nome, horas: auto.horas, economia: auto.economia, complexidade: auto.complexidade, criadoEm: new Date().toISOString() });
+                btn.innerHTML = '<i class="fas fa-check text-green-600"></i> Salvo';
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            } catch(e) { console.error(e); alert("Erro ao salvar."); btn.innerHTML = originalHtml; }
+        };
+
+        window.excluirProdutoBD = async (docId) => { if(currentUser && confirm("Apagar este produto?")) await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos', docId)); };
+
+        window.salvarContratoFechado = async () => {
+            if(!currentUser) return;
+            const clienteNome = document.getElementById('clienteNome').value.trim();
+            if (!clienteNome) return alert("Erro: Preencha o Nome da Empresa.");
+
+            const btn = document.getElementById('btnWebhookFechado'); const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Salvando...';
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), {
+                    data: new Date().toISOString(), cliente: clienteNome, email: document.getElementById('clienteEmail').value.trim(),
+                    modelo: modeloNegocio,
+                    valor_setup: window.dadosCalculados.totais_pacote.valor_setup_cobrado, valor_mrr: window.dadosCalculados.totais_pacote.valor_mrr_mensal, pacote: automacoes
+                });
+                
+                const urlFechado = document.getElementById('urlFechado').value.trim();
+                if (urlFechado && urlFechado.startsWith('http')) {
+                    await fetch(urlFechado, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(window.dadosCalculados) }).catch(e=>{});
+                }
+                alert("Contrato Fechado!"); window.mudarAba('historico');
+            } catch(e) { console.error(e); alert("Erro ao salvar histórico."); }
+            btn.innerHTML = originalHtml;
+        };
+
+        window.excluirHistoricoBD = async (docId) => { if(currentUser && confirm("Apagar registro?")) await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'historico', docId)); };
+
+        function renderizarProdutosDaNuvem() {
+            const grid = document.getElementById('gridTemplates'); grid.innerHTML = '';
+            if(produtosDaNuvem.length === 0) { grid.innerHTML = '<div class="text-slate-400 text-sm col-span-2">Nenhum produto cadastrado.</div>'; return; }
+
+            produtosDaNuvem.forEach(prod => {
+                const card = document.createElement('div'); card.className = 'bg-white border border-slate-200 shadow-sm rounded-lg p-4 flex flex-col justify-between hover:border-secondary transition-colors relative';
+                card.innerHTML = `
+                    <button onclick="window.excluirProdutoBD('${prod.id_db}')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500"><i class="fas fa-trash"></i></button>
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base pr-6">${prod.nome}</h3>
+                        <div class="flex space-x-3 text-xs font-semibold text-slate-500 my-3">
+                            <span class="bg-slate-100 px-2 py-1 rounded"><i class="far fa-clock"></i> ${prod.horas}h</span>
+                            <span class="bg-green-50 text-green-700 px-2 py-1 rounded"><i class="fas fa-piggy-bank"></i> ${formatCurrency(prod.economia)}</span>
+                        </div>
+                    </div>
+                    <button onclick="window.inserirProdutoNoOrcamento('${prod.id_db}')" class="w-full bg-slate-50 border border-slate-300 text-slate-600 hover:bg-secondary hover:text-white hover:border-secondary font-semibold py-2 rounded transition-colors text-sm">
+                        <i class="fas fa-plus"></i> Usar no Orçamento
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.inserirProdutoNoOrcamento = (id_db) => {
+            const prod = produtosDaNuvem.find(p => p.id_db === id_db);
+            if (prod) { automacoes.push({ id: Date.now(), nome: prod.nome, horas: prod.horas, complexidade: prod.complexidade, economia: prod.economia }); window.renderizarAutomacoes(); window.mudarAba('principal'); }
+        };
+
+        window.mudarAba = (abaDestino) => {
+            const painelEsquerdo = document.getElementById('painelEsquerdo'); 
+            const painelResumo = document.getElementById('painelResumo');
+
+            ['principal', 'templates', 'historico', 'configuracoes'].forEach(id => {
+                const btnId = 'btnAba' + id.charAt(0).toUpperCase() + id.slice(1).replace('ões','es'); 
+                const abaId = 'aba' + id.charAt(0).toUpperCase() + id.slice(1);
+                document.getElementById(btnId)?.classList.remove('active', 'border-b-2', 'border-secondary', 'text-secondary');
+                document.getElementById(abaId)?.classList.add('hidden');
+            });
+            
+            document.getElementById('btnAba' + abaDestino.charAt(0).toUpperCase() + abaDestino.slice(1).replace('ões','es'))?.classList.add('active', 'border-b-2', 'border-secondary', 'text-secondary');
+            document.getElementById('aba' + abaDestino.charAt(0).toUpperCase() + abaDestino.slice(1))?.classList.remove('hidden');
 
             if (abaDestino === 'principal') {
-                btnPrincipal.classList.add('active', 'border-b-2', 'border-secondary');
-                btnConfig.classList.remove('active', 'border-b-2', 'border-secondary');
-                abaPrincipal.classList.remove('hidden');
-                abaConfiguracoes.classList.add('hidden');
+                painelResumo.classList.remove('hidden'); 
+                painelEsquerdo.className = "lg:col-span-2 space-y-6 transition-all duration-300";
             } else {
-                btnConfig.classList.add('active', 'border-b-2', 'border-secondary');
-                btnPrincipal.classList.remove('active', 'border-b-2', 'border-secondary');
-                abaConfiguracoes.classList.remove('hidden');
-                abaPrincipal.classList.add('hidden');
+                painelResumo.classList.add('hidden'); 
+                painelEsquerdo.className = "lg:col-span-3 space-y-6 transition-all duration-300";
             }
-        }
+        };
 
-        function setFormaPagamento(tipo) {
+        window.setModeloNegocio = (modelo) => {
+            modeloNegocio = modelo;
+            const btnTradicional = document.getElementById('btnModeloTradicional');
+            const btnSaas = document.getElementById('btnModeloSaas');
+            const blocoTradicional = document.getElementById('blocoTradicional');
+            const blocoSaas = document.getElementById('blocoSaas');
+            const cardResumo = document.getElementById('cardResumo');
+            const cardMRR = document.getElementById('cardMRR');
+
+            if (modelo === 'tradicional') {
+                btnTradicional.className = "flex-1 sm:flex-none py-1.5 px-4 rounded-md bg-white shadow-sm font-bold text-secondary text-sm transition-all";
+                btnSaas.className = "flex-1 sm:flex-none py-1.5 px-4 rounded-md text-slate-500 hover:text-slate-700 font-semibold text-sm transition-all";
+                blocoTradicional.classList.remove('hidden'); blocoSaas.classList.add('hidden');
+                document.getElementById('blocoParcelas').classList.remove('hidden');
+                
+                cardResumo.className = "bg-primary text-white rounded-xl shadow-2xl p-6 border-t-4 border-accent transition-colors duration-500";
+                document.getElementById('iconeResumo').className = "fas fa-calculator text-slate-400";
+                cardMRR.className = "bg-gradient-to-r from-blue-900 to-slate-800 rounded-lg p-4 border border-blue-700/50 transition-all duration-500";
+                document.getElementById('lblDestaqueSetup').innerText = "Setup Total (Implementação)";
+                document.getElementById('lblDestaqueMRR').innerHTML = '<i class="fas fa-lock mr-1"></i> Manutenção / SLA';
+            } else {
+                btnSaas.className = "flex-1 sm:flex-none py-1.5 px-4 rounded-md bg-white shadow-sm font-bold text-purple_brand text-sm transition-all";
+                btnTradicional.className = "flex-1 sm:flex-none py-1.5 px-4 rounded-md text-slate-500 hover:text-slate-700 font-semibold text-sm transition-all";
+                blocoSaas.classList.remove('hidden'); blocoSaas.classList.add('grid'); blocoTradicional.classList.add('hidden');
+                document.getElementById('blocoParcelas').classList.add('hidden');
+                
+                cardResumo.className = "bg-slate-900 text-white rounded-xl shadow-2xl p-6 border-t-4 border-purple_brand transition-colors duration-500";
+                document.getElementById('iconeResumo').className = "fas fa-cloud text-purple-400";
+                cardMRR.className = "bg-gradient-to-r from-purple-900 to-purple-800 rounded-lg p-4 border border-purple-500/50 transition-all duration-500";
+                document.getElementById('lblDestaqueSetup').innerText = "Setup Cobrado";
+                document.getElementById('lblDestaqueMRR').innerHTML = '<i class="fas fa-rocket mr-1"></i> Assinatura (SaaS) MRR';
+            }
+            window.calcular();
+        };
+
+        window.setFormaPagamento = (tipo) => {
             formaPagamento = tipo;
-            const btn100 = document.getElementById('btnPag100');
-            const btn50 = document.getElementById('btnPag50');
+            document.getElementById('btnPag100').className = tipo === '100' ? "flex-1 py-3 px-2 rounded-lg bg-secondary text-white font-bold shadow-md transition-all text-sm" : "flex-1 py-3 px-2 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50 text-sm";
+            document.getElementById('btnPag50').className = tipo === '50' ? "flex-1 py-3 px-2 rounded-lg bg-secondary text-white font-bold shadow-md transition-all text-sm" : "flex-1 py-3 px-2 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50 text-sm";
+            window.calcular();
+        };
 
-            if(tipo === '100') {
-                btn100.className = "flex-1 py-3 px-4 rounded-lg bg-secondary text-white font-bold shadow-md transition-all transform hover:scale-[1.02]";
-                btn50.className = "flex-1 py-3 px-4 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50";
-            } else {
-                btn50.className = "flex-1 py-3 px-4 rounded-lg bg-secondary text-white font-bold shadow-md transition-all transform hover:scale-[1.02]";
-                btn100.className = "flex-1 py-3 px-4 rounded-lg bg-white border border-slate-300 text-slate-600 font-bold shadow-sm transition-all hover:bg-slate-50";
-            }
-            calcular();
-        }
-
-        function renderizarAutomacoes() {
-            const container = document.getElementById('listaAutomacoes');
-            container.innerHTML = '';
+        window.renderizarAutomacoes = () => {
+            const container = document.getElementById('listaAutomacoes'); container.innerHTML = '';
             document.getElementById('contadorAutomacoes').innerText = `${automacoes.length} Item(s)`;
 
             automacoes.forEach((auto) => {
-                const card = document.createElement('div');
-                card.className = 'bg-slate-50 rounded-lg p-4 border border-slate-200 relative group';
+                const card = document.createElement('div'); card.className = 'bg-slate-50 rounded-lg p-4 border border-slate-200 relative group';
+                let btnExcluir = automacoes.length > 1 ? `<button onclick="window.removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500"><i class="fas fa-times-circle text-lg"></i></button>` : '';
                 
-                let btnExcluir = automacoes.length > 1 ? `<button onclick="removerAutomacao(${auto.id})" class="absolute top-2 right-2 text-slate-400 hover:text-red-500 transition-colors" title="Remover"><i class="fas fa-times-circle text-lg"></i></button>` : '';
-
                 card.innerHTML = `
                     ${btnExcluir}
-                    <div class="mb-3 pr-8">
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Fluxo/Automação</label>
-                        <input type="text" value="${auto.nome}" onchange="atualizarAutomacao(${auto.id}, 'nome', this.value)" class="w-full border border-slate-300 rounded text-sm p-2 focus:ring-1 focus:ring-secondary">
+                    <div class="mb-3 pr-8 flex flex-col sm:flex-row sm:items-center justify-between">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1 sm:mb-0">Nome do Fluxo</label>
+                        <button id="btnSaveProd_${auto.id}" onclick="window.salvarProdutoRapido(${auto.id})" class="text-[10px] text-secondary hover:text-blue-800 transition-colors bg-blue-50 px-2 py-1 rounded border border-blue-100" title="Salvar na Base de Produtos">
+                            <i class="fas fa-save mr-1"></i> Salvar na Base
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" value="${auto.nome}" onchange="window.atualizarAutomacao(${auto.id}, 'nome', this.value)" class="w-full border border-slate-300 rounded text-sm p-2 focus:ring-1 focus:ring-secondary">
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
                             <label class="block text-xs text-slate-600 mb-1">Horas Est.</label>
-                            <input type="number" value="${auto.horas}" oninput="atualizarAutomacao(${auto.id}, 'horas', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-center">
+                            <input type="number" value="${auto.horas}" oninput="window.atualizarAutomacao(${auto.id}, 'horas', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-center">
                         </div>
                         <div>
                             <label class="block text-xs text-slate-600 mb-1">Complexidade</label>
-                            <select onchange="atualizarAutomacao(${auto.id}, 'complexidade', parseFloat(this.value))" class="w-full border border-slate-300 rounded text-sm p-2 bg-white">
+                            <select onchange="window.atualizarAutomacao(${auto.id}, 'complexidade', parseFloat(this.value))" class="w-full border border-slate-300 rounded text-sm p-2 bg-white">
                                 <option value="0" ${auto.complexidade === 0 ? 'selected' : ''}>Baixa (+0%)</option>
                                 <option value="0.15" ${auto.complexidade === 0.15 ? 'selected' : ''}>Média (+15%)</option>
                                 <option value="0.30" ${auto.complexidade === 0.30 ? 'selected' : ''}>Alta (+30%)</option>
@@ -327,193 +699,126 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs text-slate-600 mb-1">Econ. Anual (R$)</label>
-                            <input type="number" value="${auto.economia}" oninput="atualizarAutomacao(${auto.id}, 'economia', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-right">
+                            <label class="block text-xs text-slate-600 mb-1">Econ. Mensal (R$)</label>
+                            <input type="number" value="${auto.economia}" oninput="window.atualizarAutomacao(${auto.id}, 'economia', parseFloat(this.value)||0)" class="w-full border border-slate-300 rounded text-sm p-2 text-right">
                         </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
-            calcular();
-        }
+            window.calcular();
+        };
 
-        function adicionarAutomacao() {
-            automacoes.push({ id: Date.now(), nome: `Nova Automação ${automacoes.length + 1}`, horas: 10, complexidade: 0.15, economia: 5000 });
-            renderizarAutomacoes();
-        }
+        window.adicionarAutomacao = () => { automacoes.push({ id: Date.now(), nome: `Nova Automação`, horas: 10, complexidade: 0.15, economia: 1000 }); window.renderizarAutomacoes(); };
+        window.removerAutomacao = (id) => { if (automacoes.length > 1) { automacoes = automacoes.filter(a => a.id !== id); window.renderizarAutomacoes(); } };
+        window.atualizarAutomacao = (id, campo, valor) => { const idx = automacoes.findIndex(a => a.id === id); if (idx !== -1) { automacoes[idx][campo] = valor; if(campo !== 'nome') window.calcular(); } };
 
-        function removerAutomacao(id) {
-            if (automacoes.length <= 1) return;
-            automacoes = automacoes.filter(a => a.id !== id);
-            renderizarAutomacoes();
-        }
+        window.calcular = () => {
+            const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
+            const markup = 1 + (((parseFloat(document.getElementById('percFixo').value)||0) + (parseFloat(document.getElementById('percVariavel').value)||0) + (parseFloat(document.getElementById('percLucro').value)||0)) / 100);
+            
+            let tHoras = 0, tComp = 0, tEcon_Mensal = 0;
+            automacoes.forEach(a => { 
+                tHoras += a.horas; 
+                tEcon_Mensal += a.economia; 
+                tComp += ((a.horas * valorHora) * markup) * a.complexidade; 
+            });
 
-        function atualizarAutomacao(id, campo, valor) {
-            const index = automacoes.findIndex(a => a.id === id);
-            if (index !== -1) {
-                automacoes[index][campo] = valor;
-                if(campo !== 'nome') calcular();
-            }
-        }
+            const cmv = tHoras * valorHora;
+            const pBase = cmv * markup;
+            const custoDevTotal = pBase + tComp;
+            
+            const linhasResumo = document.getElementById('linhasResumo');
+            let mrrFinal = 0, setupCobrado = 0, parcela1 = 0, parcela2 = 0;
+            let linhasHtml = '';
 
-        function calcular() {
-            try {
-                const valorHora = parseFloat(document.getElementById('valorHora').value) || 0;
-                const percFixo = parseFloat(document.getElementById('percFixo').value) || 0;
-                const percVariavel = parseFloat(document.getElementById('percVariavel').value) || 0;
-                const percLucro = parseFloat(document.getElementById('percLucro').value) || 0;
-                const fatorCaptura = (parseFloat(document.getElementById('fatorCaptura').value) || 0) / 100;
-                const percManutencao = (parseFloat(document.getElementById('percManutencao').value) || 0) / 100;
-
-                const markup = 1 + ((percFixo + percVariavel + percLucro) / 100);
-
-                let totalHoras = 0;
-                let totalComplexidadeValor = 0;
-                let totalEconomiaAnual = 0;
-
-                automacoes.forEach(auto => {
-                    totalHoras += auto.horas;
-                    totalEconomiaAnual += auto.economia;
-                    const precoBaseItem = (auto.horas * valorHora) * markup;
-                    totalComplexidadeValor += (precoBaseItem * auto.complexidade);
-                });
-
-                const cmvGlobal = totalHoras * valorHora;
-                const pBaseGlobal = cmvGlobal * markup;
-                const valorEstrategicoGlobal = totalEconomiaAnual * fatorCaptura;
-                const precoFinalSetup = pBaseGlobal + totalComplexidadeValor + valorEstrategicoGlobal;
-                const valorMRR = precoFinalSetup * percManutencao;
-
-                // Lógica da Forma de Pagamento
-                let parcela1 = precoFinalSetup;
-                let parcela2 = 0;
+            if (modeloNegocio === 'tradicional') {
+                const fatorCapturaAnual = (parseFloat(document.getElementById('fatorCapturaTrad').value) || 0) / 100;
+                const percSLA = (parseFloat(document.getElementById('percManutencaoTrad').value) || 0) / 100;
                 
-                if(formaPagamento === '50') {
-                    parcela1 = precoFinalSetup / 2;
-                    parcela2 = precoFinalSetup / 2;
+                const tEcon_Anual = tEcon_Mensal * 12;
+                const premioROI = tEcon_Anual * fatorCapturaAnual;
+                
+                setupCobrado = custoDevTotal + premioROI;
+                mrrFinal = setupCobrado * percSLA;
+
+                if (formaPagamento === '50') {
+                    parcela1 = setupCobrado / 2; parcela2 = setupCobrado / 2;
                     document.getElementById('lblTipoPagamento').innerText = '50% Início / 50% Metade';
                     document.getElementById('resParcelas').innerHTML = `Sinal: <span class="text-white">${formatCurrency(parcela1)}</span> <br> Metade: <span class="text-white">${formatCurrency(parcela2)}</span>`;
                 } else {
+                    parcela1 = setupCobrado;
                     document.getElementById('lblTipoPagamento').innerText = '100% à vista no Início';
                     document.getElementById('resParcelas').innerHTML = `Faturamento Único: <br><span class="text-white text-lg">${formatCurrency(parcela1)}</span>`;
                 }
 
-                document.getElementById('resHoras').innerText = `${totalHoras} h`;
-                document.getElementById('resCMV').innerText = formatCurrency(cmvGlobal);
-                document.getElementById('resMarkup').innerText = markup.toFixed(2) + 'x';
-                document.getElementById('resPBase').innerText = formatCurrency(pBaseGlobal);
-                document.getElementById('resComplex').innerText = '+ ' + formatCurrency(totalComplexidadeValor);
-                document.getElementById('resEstrategico').innerText = '+ ' + formatCurrency(valorEstrategicoGlobal);
-                document.getElementById('resTotal').innerText = formatCurrency(precoFinalSetup);
-                document.getElementById('resMRR').innerHTML = `${formatCurrency(valorMRR)} <span class="text-xs text-slate-400 font-normal">/mês</span>`;
+                linhasHtml = `
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-2"><span class="text-slate-400">Total de Horas:</span><span class="font-mono">${tHoras} h</span></div>
+                    <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Custo Base (Horas x Valor):</span><span class="font-mono">${formatCurrency(cmv)}</span></div>
+                    <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Índice Markup (Mult.):</span><span class="font-mono text-secondary bg-blue-900/30 px-2 py-0.5 rounded">${markup.toFixed(2)}x</span></div>
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-2"><span class="text-slate-400">Risco / Complexidade:</span><span class="font-mono text-red-400">+ ${formatCurrency(tComp)}</span></div>
+                    <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Prêmio ROI (Anual):</span><span class="font-mono text-success">+ ${formatCurrency(premioROI)}</span></div>
+                `;
+                document.getElementById('resTotal').classList.replace('text-purple-400', 'text-accent');
+                document.getElementById('resTotal').classList.replace('text-slate-500', 'text-accent');
 
-                window.dadosCalculados = {
-                    totais_pacote: {
-                        horas: totalHoras,
-                        cmv: cmvGlobal,
-                        preco_base: pBaseGlobal,
-                        adicional_complexidade: totalComplexidadeValor,
-                        economia_anual_cliente: totalEconomiaAnual,
-                        premio_roi: valorEstrategicoGlobal,
-                        valor_setup_total: precoFinalSetup,
-                        valor_mrr_mensal: valorMRR
-                    },
-                    pagamento_setup: {
-                        modalidade: formaPagamento === '100' ? '100% Início' : '50% Início e 50% Entrega',
-                        parcela_sinal: parcela1,
-                        parcela_entrega: parcela2
-                    },
-                    parametros_usados: { valorHora, markup, fatorCaptura, percManutencao }
-                };
-            } catch (error) {
-                console.error("Erro no cálculo: ", error);
-            }
-        }
+            } else {
+                const mesesAmortizacao = parseInt(document.getElementById('mesesContratoSaas').value) || 12;
+                const fatorCapturaMensal = (parseFloat(document.getElementById('fatorCapturaSaas').value) || 0) / 100;
+                const infraMensal = parseFloat(document.getElementById('custoInfraSaas').value) || 0;
 
-        async function dispararWebhook(tipo) {
-            const msgBox = document.getElementById('webhookMessage');
-            msgBox.classList.add('hidden'); // Esconde mensagens antigas
+                const amortizacaoMensal = custoDevTotal / mesesAmortizacao;
+                const premioROIMensal = tEcon_Mensal * fatorCapturaMensal;
+                
+                setupCobrado = 0; 
+                mrrFinal = amortizacaoMensal + premioROIMensal + infraMensal;
 
-            const btnId = tipo === 'orcamento' ? 'btnWebhookOrcamento' : 'btnWebhookContrato';
-            const urlId = tipo === 'orcamento' ? 'urlOrcamento' : 'urlContrato';
-            
-            const btn = document.getElementById(btnId);
-            const webhookUrl = document.getElementById(urlId).value.trim();
-
-            // Validação 1: URL Vazia ou inválida
-            if (!webhookUrl || !webhookUrl.startsWith('http')) {
-                mostrarNotificacao(`ERRO DE CONFIGURAÇÃO: A URL informada para o webhook de ${tipo} é inválida. Vá na aba 'Configurações Base' e cole o link correto do seu n8n.`, 'error');
-                return;
+                linhasHtml = `
+                    <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-2"><span class="text-slate-400">Desenvolvimento Total:</span><span class="font-mono text-slate-300">${formatCurrency(custoDevTotal)}</span></div>
+                    <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Amortização (${mesesAmortizacao}x):</span><span class="font-mono text-purple-300">${formatCurrency(amortizacaoMensal)} /m</span></div>
+                    <div class="flex justify-between items-center text-sm"><span class="text-slate-400">Custo Fixo (Infra):</span><span class="font-mono text-purple-300">+ ${formatCurrency(infraMensal)} /m</span></div>
+                    <div class="flex justify-between items-center text-sm border-t border-slate-700 pt-2"><span class="text-slate-300 font-semibold">Captura de Valor Mensal:</span><span class="font-mono text-success font-bold">+ ${formatCurrency(premioROIMensal)} /m</span></div>
+                `;
+                document.getElementById('resTotal').classList.replace('text-accent', 'text-slate-500'); 
             }
 
-            // Validação 2: Dados do Cliente
-            const clienteNome = document.getElementById('clienteNome').value.trim();
-            if (!clienteNome) {
-                mostrarNotificacao('ERRO DE DADOS: Preencha pelo menos o "Nome da Empresa" antes de gerar a proposta.', 'error');
-                return;
-            }
+            linhasResumo.innerHTML = linhasHtml;
+            document.getElementById('resTotal').innerText = formatCurrency(setupCobrado);
+            document.getElementById('resMRR').innerHTML = `${formatCurrency(mrrFinal)}`;
 
-            const payload = {
-                tipo_disparo: tipo,
-                data_geracao: new Date().toISOString(),
-                cliente: {
-                    nome: clienteNome,
-                    email: document.getElementById('clienteEmail').value.trim(),
-                    telefone: document.getElementById('clienteTelefone').value.trim(),
-                    documento: document.getElementById('clienteDoc').value.trim(),
-                    endereco: document.getElementById('clienteEndereco').value.trim()
+            window.dadosCalculados = { 
+                modelo_negocio: modeloNegocio,
+                totais_pacote: { 
+                    horas: tHoras, economia_mensal_cliente: tEcon_Mensal, custo_desenvolvimento_total: custoDevTotal,
+                    valor_setup_cobrado: setupCobrado, valor_mrr_mensal: mrrFinal 
                 },
-                escopo_projeto: automacoes,
-                financeiro_consolidado: window.dadosCalculados
+                detalhes_modelo: modeloNegocio === 'tradicional' ? { forma_pagamento: formaPagamento, parcela_sinal: parcela1, parcela_entrega: parcela2 } : { meses_contrato: document.getElementById('mesesContratoSaas').value, infra_mensal: document.getElementById('custoInfraSaas').value }
             };
+        };
 
-            const originalHtml = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Conectando ao n8n...';
+        window.dispararWebhook = async (tipo) => {
+            const url = document.getElementById(tipo === 'orcamento' ? 'urlOrcamento' : 'urlContrato').value.trim();
+            if(!url || !url.startsWith('http')) return alert("Erro: Configurar URL do webhook na aba Config.");
+            
+            const btn = document.getElementById(tipo === 'orcamento' ? 'btnWebhookOrcamento' : 'btnWebhookContrato');
+            const original = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
 
             try {
-                const response = await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ tipo_disparo: tipo, payload: window.dadosCalculados, cliente: document.getElementById('clienteNome').value }) });
+                alert("Enviado para n8n com sucesso!");
+            } catch(e) { alert("Erro CORS/Rede no n8n. Verifique o console."); }
+            btn.innerHTML = original; btn.disabled = false;
+        };
 
-                if (response.ok) {
-                    mostrarNotificacao(`✅ SUCESSO! Dados Enviados (${tipo === 'orcamento' ? 'Proposta' : 'Contrato'}).`, 'success');
-                } else {
-                    mostrarNotificacao(`❌ ERRO NO SERVIDOR N8N (Status ${response.status}). O n8n rejeitou a requisição.`, 'error');
-                }
-            } catch (error) {
-                // Se cair aqui, geralmente é problema de CORS ou DNS
-                console.error("Erro completo do Fetch:", error);
-                mostrarNotificacao(`❌ ERRO DE CONEXÃO (CORS/REDE). O navegador bloqueou o envio. Certifique-se de que a opção "Respond to CORS" está ATIVADA no seu nó Webhook do n8n.`, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalHtml;
-            }
-        }
+        window.limparFormulario = () => {
+            ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco'].forEach(id => document.getElementById(id).value = '');
+            automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 10, complexidade: 0.15, economia: 1000 }];
+            window.setModeloNegocio('tradicional');
+            document.getElementById('clienteTelefone').value = '';
+            document.getElementById('clienteDoc').value = '';
+        };
 
-        function mostrarNotificacao(mensagem, tipo) {
-            const msgBox = document.getElementById('webhookMessage');
-            msgBox.innerText = mensagem;
-            msgBox.className = `p-4 rounded-lg text-center font-bold text-sm transition-all shadow-sm mt-3 ${tipo === 'error' ? 'bg-red-100 text-red-800 border border-red-300' : 'bg-green-100 text-green-800 border border-green-300'}`;
-            msgBox.classList.remove('hidden');
-        }
-
-        function limparFormulario() {
-            if (confirm('Deseja limpar os dados do cliente e resetar as automações?')) {
-                ['clienteNome', 'clienteEmail', 'clienteTelefone', 'clienteDoc', 'clienteEndereco'].forEach(id => document.getElementById(id).value = '');
-                automacoes = [{ id: Date.now(), nome: 'Fluxo Inicial', horas: 10, complexidade: 0.15, economia: 5000 }];
-                setFormaPagamento('100');
-                renderizarAutomacoes();
-                document.getElementById('webhookMessage').classList.add('hidden');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            renderizarAutomacoes();
-        });
+        window.addEventListener('DOMContentLoaded', () => { window.renderizarAutomacoes(); });
     </script>
 </body>
 </html>
