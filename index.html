@@ -43,18 +43,29 @@
     <div id="loginScreen" class="fixed inset-0 z-50 bg-primary flex flex-col items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center fade-in">
             <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-lock text-3xl text-secondary"></i>
+                <i class="fas fa-shield-alt text-3xl text-secondary"></i>
             </div>
             <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Acesso Restrito</h1>
-            <p class="text-slate-500 mb-8">Autentique-se para acessar orçamentos, produtos e histórico seguro.</p>
+            <p class="text-slate-500 mb-6 text-sm">Autentique-se com seu e-mail e senha para acessar o sistema.</p>
             
-            <button id="btnEntrar" onclick="window.realizarLogin()" class="w-full bg-secondary hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center text-lg mb-3">
+            <div class="space-y-4 mb-6 text-left w-full">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Seu E-mail</label>
+                    <input type="email" id="authEmail" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="consultor@empresa.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Sua Senha</label>
+                    <input type="password" id="authPassword" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-secondary outline-none" placeholder="••••••••" onkeypress="if(event.key === 'Enter') window.realizarLogin()">
+                </div>
+            </div>
+            
+            <button id="btnEntrar" onclick="window.realizarLogin()" class="w-full bg-secondary hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1 flex items-center justify-center text-base mb-3">
                 <i class="fas fa-sign-in-alt mr-2"></i> Autenticar no Sistema
             </button>
             <button onclick="window.entrarModoLocal()" class="w-full bg-slate-100 border border-slate-300 text-slate-600 hover:bg-slate-200 font-bold py-3 px-4 rounded-xl transition-colors flex items-center justify-center text-sm">
                 <i class="fas fa-hdd mr-2"></i> Entrar em Modo Offline (Local)
             </button>
-            <div id="loginMsg" class="mt-4 text-sm text-red-500 hidden"></div>
+            <div id="loginMsg" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 font-medium hidden slide-down"></div>
         </div>
     </div>
 
@@ -121,7 +132,7 @@
                     <div class="bg-white rounded-xl shadow-sm border border-secondary p-6">
                         <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
                             <h2 class="text-lg font-bold text-slate-800"><i class="fas fa-project-diagram text-secondary mr-2"></i> Escopo Híbrido (Projetos & SaaS)</h2>
-                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">0 Item(s)</span>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded-full" id="contadorAutomacoes">1 Item</span>
                         </div>
                         
                         <div id="listaAutomacoes" class="space-y-4 mb-4"></div>
@@ -353,7 +364,7 @@
                             <span id="resMarkup" class="font-mono text-blue-400 bg-blue-900/30 px-1 rounded">1.00x</span>
                         </div>
                         
-                        <!-- Breakdown do Markup -->
+                        <!-- Breakdown do Markup (Fixas, Var, Lucro) -->
                         <div class="pl-2 border-l-2 border-slate-600 space-y-1 my-1 py-1">
                             <div class="flex justify-between items-center text-slate-400">
                                 <span>└ Despesas Fixas:</span>
@@ -379,6 +390,7 @@
                             <span id="resTotalDev" class="font-mono">R$ 0,00</span>
                         </div>
                         
+                        <!-- ESCLARECIMENTO DA DIVISÃO -->
                         <div class="flex justify-between text-[10px] text-slate-400 px-1 mt-1">
                             <span>➜ Convertido em Setup: <strong id="resDevSetup" class="text-blue-300 font-mono">R$ 0,00</strong></span>
                             <span>➜ Amortizado SaaS: <strong id="resDevSaas" class="text-purple-300 font-mono">R$ 0,00</strong></span>
@@ -442,7 +454,7 @@
     <!-- SCRIPT DE LÓGICA E BANCO DE DADOS HÍBRIDO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithCustomToken, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
@@ -452,8 +464,8 @@
             storageBucket: "calculadora-automacao.firebasestorage.app",
             messagingSenderId: "1097598113223",
             appId: "1:1097598113223:web:820b0514e989f6ca6475e2",
-            measurementId: "G-6MPXBVYG98"};
-
+            measurementId: "G-6MPXBVYG98"
+        };
         let app, auth, db, currentUser = null; let modoOffline = false; 
 
         let historicoBD = JSON.parse(localStorage.getItem('crm_historico')) || [];
@@ -463,7 +475,6 @@
         catch(e) { modoOffline = true; }
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // ESTADOS DA CALCULADORA (Inicia 100% Zerado)
         let automacoes = [];
         let formaPagamento = '100'; let modeloNovoProduto = 'tradicional'; 
         let idProdutoEmEdicao = null;
@@ -491,22 +502,48 @@
         window.mascaraTelefone = (e) => { let v=e.target.value.replace(/\D/g,''); if(v.length>11)v=v.slice(0,11); if(v.length>2)v=v.replace(/^(\d{2})(\d)/g,'($1) $2'); if(v.length>9)v=v.replace(/(\d{5})(\d)/,'$1-$2'); else if(v.length>8)v=v.replace(/(\d{4})(\d)/,'$1-$2'); e.target.value=v; };
         window.mascaraCpfCnpj = (e) => { let v=e.target.value.replace(/\D/g,''); if(v.length>14)v=v.slice(0,14); if(v.length<=11){ v=v.replace(/(\d{3})(\d)/,'$1.$2'); v=v.replace(/(\d{3})(\d)/,'$1.$2'); v=v.replace(/(\d{3})(\d{1,2})$/,'$1-$2'); }else{ v=v.replace(/^(\d{2})(\d)/,'$1.$2'); v=v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3'); v=v.replace(/\.(\d{3})(\d)/,'.$1/$2'); v=v.replace(/(\d{4})(\d)/,'$1-$2'); } e.target.value=v; };
 
-        window.entrarModoLocal = () => { modoOffline = true; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden'); document.getElementById('userEmailDisplay').innerText = "Offline (Local)"; renderizarInterfacesBD(); window.calcular(); };
+        // --- AUTENTICAÇÃO RESTRITA COM EMAIL E SENHA ---
+        window.entrarModoLocal = () => { 
+            modoOffline = true; 
+            document.getElementById('loginScreen').classList.add('hidden'); 
+            document.getElementById('appScreen').classList.remove('hidden'); 
+            document.getElementById('userEmailDisplay').innerText = "Offline (Local)"; 
+            renderizarInterfacesBD(); window.calcular(); 
+        };
         
         window.realizarLogin = async () => { 
             if(modoOffline) return window.entrarModoLocal(); 
+
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+
+            if(!email || !password) {
+                document.getElementById('loginMsg').innerText = "Preencha e-mail e senha.";
+                document.getElementById('loginMsg').classList.remove('hidden');
+                return;
+            }
+
             const btn = document.getElementById('btnEntrar'); 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Autenticando...'; 
+            btn.disabled = true;
+
             try { 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) { 
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !email) { 
                     await signInWithCustomToken(auth, __initial_auth_token); 
                 } else { 
-                    await signInAnonymously(auth); 
+                    await signInWithEmailAndPassword(auth, email, password); 
                 } 
-            } catch (e) { 
-                document.getElementById('loginMsg').innerText = "Erro Firebase. Use Modo Offline."; 
+            } catch (error) { 
+                console.error(error);
+                let erroMsg = "Erro ao conectar.";
+                if(error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') erroMsg = "E-mail ou senha incorretos.";
+                else if(error.code === 'auth/invalid-email') erroMsg = "E-mail inválido.";
+
+                document.getElementById('loginMsg').innerText = erroMsg; 
                 document.getElementById('loginMsg').classList.remove('hidden'); 
-                btn.innerHTML = 'Autenticar'; 
+                btn.innerHTML = originalText; 
+                btn.disabled = false;
             } 
         };
         
@@ -515,7 +552,11 @@
         if(!modoOffline && auth) {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    currentUser = user; document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('appScreen').classList.remove('hidden');
+                    currentUser = user; 
+                    document.getElementById('loginScreen').classList.add('hidden'); 
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('userEmailDisplay').innerText = user.email || "Consultor";
+                    
                     onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), (snap) => { produtosBD = []; snap.forEach((doc) => { produtosBD.push({ id_db: doc.id, ...doc.data() }); }); localStorage.setItem('crm_produtos', JSON.stringify(produtosBD)); renderizarProdutos(); });
                     onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), (snap) => { historicoBD = []; snap.forEach(doc => historicoBD.push({ id_db: doc.id, ...doc.data() })); historicoBD.sort((a, b) => new Date(b.data) - new Date(a.data)); localStorage.setItem('crm_historico', JSON.stringify(historicoBD)); renderizarHistorico(); });
                     window.calcular();
@@ -979,7 +1020,7 @@
                 }); 
                 
                 if(response.ok) {
-                    msgBox.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${tipo === 'orcamento' ? 'Proposta enviada' : 'Contrato gerado'} `;
+                    msgBox.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${tipo === 'orcamento' ? 'Proposta enviada' : 'Contrato gerado'} com sucesso `;
                     msgBox.className = 'p-3 rounded-lg text-center font-bold text-sm mt-3 bg-green-100 text-green-800 border border-green-300 slide-down';
                     msgBox.classList.remove('hidden');
                 } else {
