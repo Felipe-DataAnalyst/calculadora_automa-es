@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Pro: Sistema Cloud V19</title>
+    <title>Calculadora Pro: Sistema Cloud V21</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -329,7 +329,7 @@
                         <div class="space-y-4">
                             <div><label class="block text-sm font-bold text-slate-700 mb-1">URL: Proposta Comercial</label><input type="url" id="urlOrcamento" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/e719e067-1b0b-4490-af01-8ba23d116ae5" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50"></div>
                             <div><label class="block text-sm font-bold text-slate-700 mb-1">URL: Geração de Contrato</label><input type="url" id="urlContrato" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/ca410092-9808-45c3-841b-caebe48f440f" class="w-full border border-slate-300 rounded-lg p-2.5 font-mono text-sm bg-slate-50"></div>
-                            <div class="pt-2 border-t border-slate-200"><label class="block text-sm font-bold text-purple_brand mb-1">URL: Contrato Fechado (Extra)</label><input type="url" id="urlFechado" value="https://n8n-n8n.yiyv4f.easypanel.host/webhook-test/11182885-2f9f-470a-83dc-2bfefa294924" class="w-full border border-purple-200 rounded-lg p-2.5 font-mono text-sm bg-purple-50"></div>
+                            <div class="pt-2 border-t border-slate-200"><label class="block text-sm font-bold text-purple_brand mb-1">URL: Contrato Fechado (Extra)</label><input type="url" id="urlFechado" placeholder="Opcional: Disparar para outro CRM ao fechar" class="w-full border border-purple-200 rounded-lg p-2.5 font-mono text-sm bg-purple-50"></div>
                         </div>
                     </div>
                 </div>
@@ -352,7 +352,7 @@
                             <span id="resHoras" class="font-mono">0 h</span>
                         </div>
                         <div class="flex justify-between items-center text-slate-300">
-                            <span>Custo das Horas:</span>
+                            <span>Custo das Horas (Cru):</span>
                             <span id="resCustoHoras" class="font-mono">R$ 0,00</span>
                         </div>
                         
@@ -361,7 +361,7 @@
                             <span id="resMarkup" class="font-mono text-blue-400 bg-blue-900/30 px-1 rounded">1.00x</span>
                         </div>
                         
-                        <!-- Breakdown do Markup (Fixas, Var, Lucro) -->
+                        <!-- Breakdown do Markup -->
                         <div class="pl-2 border-l-2 border-slate-600 space-y-1 my-1 py-1">
                             <div class="flex justify-between items-center text-slate-400">
                                 <span>└ Despesas Fixas:</span>
@@ -463,13 +463,14 @@
             appId: "1:1097598113223:web:820b0514e989f6ca6475e2",
             measurementId: "G-6MPXBVYG98"
         };
-        let app, auth, db, currentUser = null; let modoOffline = false; 
 
-        let historicoBD = JSON.parse(localStorage.getItem('crm_historico')) || [];
-        let produtosBD = JSON.parse(localStorage.getItem('crm_produtos')) || [];
+        let app, auth, db, currentUser = null; 
+
+        let historicoBD = [];
+        let produtosBD = [];
 
         try { app = initializeApp(firebaseConfig); auth = getAuth(app); db = getFirestore(app); } 
-        catch(e) { modoOffline = true; }
+        catch(e) { console.error("Erro na inicialização do Firebase", e); }
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         let automacoes = [];
@@ -500,21 +501,12 @@
         window.mascaraCpfCnpj = (e) => { let v=e.target.value.replace(/\D/g,''); if(v.length>14)v=v.slice(0,14); if(v.length<=11){ v=v.replace(/(\d{3})(\d)/,'$1.$2'); v=v.replace(/(\d{3})(\d)/,'$1.$2'); v=v.replace(/(\d{3})(\d{1,2})$/,'$1-$2'); }else{ v=v.replace(/^(\d{2})(\d)/,'$1.$2'); v=v.replace(/^(\d{2})\.(\d{3})(\d)/,'$1.$2.$3'); v=v.replace(/\.(\d{3})(\d)/,'.$1/$2'); v=v.replace(/(\d{4})(\d)/,'$1-$2'); } e.target.value=v; };
 
         // --- AUTENTICAÇÃO RESTRITA COM EMAIL E SENHA ---
-        window.entrarModoLocal = () => { 
-            modoOffline = true; 
-            document.getElementById('loginScreen').classList.add('hidden'); 
-            document.getElementById('appScreen').classList.remove('hidden'); 
-            document.getElementById('userEmailDisplay').innerText = "Offline (Local)"; 
-            renderizarInterfacesBD(); window.calcular(); 
-        };
-        
         window.realizarLogin = async () => { 
-            if(modoOffline) return window.entrarModoLocal(); 
-
             const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value.trim();
+            const isCanvasPreview = typeof __initial_auth_token !== 'undefined' && __initial_auth_token;
 
-            if(!email || !password) {
+            if(!isCanvasPreview && (!email || !password)) {
                 document.getElementById('loginMsg').innerText = "Preencha e-mail e senha.";
                 document.getElementById('loginMsg').classList.remove('hidden');
                 return;
@@ -526,7 +518,7 @@
             btn.disabled = true;
 
             try { 
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token && !email) { 
+                if (isCanvasPreview && (!email || !password)) { 
                     await signInWithCustomToken(auth, __initial_auth_token); 
                 } else { 
                     await signInWithEmailAndPassword(auth, email, password); 
@@ -534,8 +526,21 @@
             } catch (error) { 
                 console.error(error);
                 let erroMsg = "Erro ao conectar.";
-                if(error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') erroMsg = "E-mail ou senha incorretos.";
-                else if(error.code === 'auth/invalid-email') erroMsg = "E-mail inválido.";
+                
+                if(error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    erroMsg = "E-mail ou senha incorretos.";
+                } else if(error.code === 'auth/invalid-email') {
+                    erroMsg = "E-mail inválido.";
+                } else if(error.code === 'auth/operation-not-allowed') {
+                    erroMsg = "⚠️ Ative o provedor 'E-mail/Senha' no Console do Firebase (Aba Authentication > Sign-in method).";
+                    
+                    if (isCanvasPreview) {
+                        try {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                            return; 
+                        } catch(e) { console.error(e); }
+                    }
+                }
 
                 document.getElementById('loginMsg').innerText = erroMsg; 
                 document.getElementById('loginMsg').classList.remove('hidden'); 
@@ -544,9 +549,9 @@
             } 
         };
         
-        window.fazerLogout = () => { if(!modoOffline) signOut(auth); else location.reload(); };
+        window.fazerLogout = () => { signOut(auth); location.reload(); };
 
-        if(!modoOffline && auth) {
+        if(auth) {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUser = user; 
@@ -554,14 +559,12 @@
                     document.getElementById('appScreen').classList.remove('hidden');
                     document.getElementById('userEmailDisplay').innerText = user.email || "Consultor";
                     
-                    onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), (snap) => { produtosBD = []; snap.forEach((doc) => { produtosBD.push({ id_db: doc.id, ...doc.data() }); }); localStorage.setItem('crm_produtos', JSON.stringify(produtosBD)); renderizarProdutos(); });
-                    onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), (snap) => { historicoBD = []; snap.forEach(doc => historicoBD.push({ id_db: doc.id, ...doc.data() })); historicoBD.sort((a, b) => new Date(b.data) - new Date(a.data)); localStorage.setItem('crm_historico', JSON.stringify(historicoBD)); renderizarHistorico(); });
+                    onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), (snap) => { produtosBD = []; snap.forEach((doc) => { produtosBD.push({ id_db: doc.id, ...doc.data() }); }); renderizarProdutos(); });
+                    onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), (snap) => { historicoBD = []; snap.forEach(doc => historicoBD.push({ id_db: doc.id, ...doc.data() })); historicoBD.sort((a, b) => new Date(b.data) - new Date(a.data)); renderizarHistorico(); });
                     window.calcular();
                 } else { currentUser = null; document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('appScreen').classList.add('hidden'); }
             });
         }
-
-        function renderizarInterfacesBD() { renderizarProdutos(); renderizarHistorico(); }
 
         function renderizarHistorico() {
             const tbody = document.getElementById('tabelaHistorico'); tbody.innerHTML = '';
@@ -692,17 +695,13 @@
             const itemData = { nome, horas, economia, complexidade, modelo: modeloNovoProduto, infra };
             
             if (idProdutoEmEdicao) {
-                if (!modoOffline && currentUser) { 
+                if (currentUser) { 
                     try { await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos', idProdutoEmEdicao), { ...itemData, atualizadoEm: new Date().toISOString() }); } catch(e) { console.error(e); } 
-                } else { 
-                    const idx = produtosBD.findIndex(p => p.id_db === idProdutoEmEdicao);
-                    if(idx !== -1) { produtosBD[idx] = { ...produtosBD[idx], ...itemData }; localStorage.setItem('crm_produtos', JSON.stringify(produtosBD)); renderizarProdutos(); }
                 }
                 window.cancelarEdicaoProduto();
             } else {
                 itemData.criadoEm = new Date().toISOString();
-                if (!modoOffline && currentUser) { try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), itemData); } catch(e) {} } 
-                else { itemData.id_db = Date.now().toString(); produtosBD.push(itemData); localStorage.setItem('crm_produtos', JSON.stringify(produtosBD)); renderizarProdutos(); }
+                if (currentUser) { try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), itemData); } catch(e) {} } 
                 
                 ['novoProdNome', 'novoProdHoras', 'novoProdEcon', 'novoProdInfra'].forEach(id => document.getElementById(id).value = '');
                 btn.innerHTML = '<i class="fas fa-save mr-1"></i> Salvar Produto';
@@ -714,8 +713,7 @@
             const btn = document.getElementById(`btnSaveProd_${idLocal}`); const originalHtml = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
             const novoItem = { nome: auto.nome, horas: auto.horas, economia: auto.economia, complexidade: auto.complexidade, modelo: auto.modelo, infra: auto.infra || 0, criadoEm: new Date().toISOString() };
 
-            if (!modoOffline && currentUser) { try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), novoItem); } catch(e) {} } 
-            else { novoItem.id_db = Date.now().toString(); produtosBD.push(novoItem); localStorage.setItem('crm_produtos', JSON.stringify(produtosBD)); renderizarProdutos(); }
+            if (currentUser) { try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos'), novoItem); } catch(e) { console.error("Erro Firebase", e); } } 
             btn.innerHTML = '<i class="fas fa-check text-green-600"></i>'; setTimeout(() => btn.innerHTML = originalHtml, 2000);
         };
 
@@ -747,9 +745,10 @@
                 valor_setup: window.dadosCalculados.totais_gerais.setup_total_cobrado, valor_mrr: window.dadosCalculados.totais_gerais.mrr_total_cobrado, pacote: automacoes
             };
 
-            let backupId = Date.now().toString();
-            if(modoOffline || !currentUser) { novoContrato.id_db = backupId; historicoBD.unshift(novoContrato); localStorage.setItem('crm_historico', JSON.stringify(historicoBD)); renderizarHistorico(); } 
-            else { try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), novoContrato); } catch(e) { novoContrato.id_db = backupId; historicoBD.unshift(novoContrato); localStorage.setItem('crm_historico', JSON.stringify(historicoBD)); renderizarHistorico(); } }
+            if(currentUser) { 
+                try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'historico'), novoContrato); } 
+                catch(e) { console.error(e); } 
+            }
             
             const urlFechado = document.getElementById('urlFechado').value.trim();
             if (urlFechado && urlFechado.startsWith('http')) { await fetch(urlFechado, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(window.dadosCalculados) }).catch(e=>{}); }
@@ -760,35 +759,19 @@
 
         window.excluirProduto = async (docId) => { 
             if(confirm("Tem certeza que deseja apagar este produto da base de dados?")) { 
-                if(!modoOffline && currentUser) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos', docId));
-                    } catch(error) {
-                        console.error("Erro Firebase Delete:", error);
-                        alert("Falha ao apagar na nuvem.");
-                    }
-                } else { 
-                    produtosBD = produtosBD.filter(p => p.id_db !== docId); 
-                    localStorage.setItem('crm_produtos', JSON.stringify(produtosBD)); 
-                    renderizarProdutos(); 
+                if(currentUser) {
+                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'produtos', docId)); } 
+                    catch(error) { console.error("Erro Firebase Delete:", error); alert("Falha ao apagar na nuvem."); }
                 } 
             } 
         };
         
         window.excluirHistorico = async (docId) => { 
             if(confirm("Tem certeza que deseja apagar este registro do histórico?")) { 
-                if(!modoOffline && currentUser) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'historico', docId));
-                    } catch(error) {
-                        console.error("Erro Firebase Delete:", error);
-                        alert("Falha ao apagar na nuvem.");
-                    }
-                } else { 
-                    historicoBD = historicoBD.filter(h => h.id_db !== docId); 
-                    localStorage.setItem('crm_historico', JSON.stringify(historicoBD)); 
-                    renderizarHistorico(); 
-                } 
+                if(currentUser) {
+                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'historico', docId)); } 
+                    catch(error) { console.error("Erro Firebase Delete:", error); alert("Falha ao apagar na nuvem."); }
+                }
             } 
         };
 
@@ -875,6 +858,13 @@
                             <input type="text" value="${formatCurrency(auto.infra)}" oninput="window.mascaraMoeda(event); window.atualizarAutomacaoMoeda(${auto.id}, 'infra', this.value)" class="w-full border border-purple-300 bg-purple-50 text-purple-900 font-bold rounded text-xs p-1.5 text-right outline-none">
                         </div>
                     </div>
+                    <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between items-center bg-white/60 rounded p-2">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Total desta automação:</span>
+                        <div class="text-right flex space-x-3">
+                            <span class="text-xs font-bold text-accent" title="Valor de Setup"><i class="fas fa-hammer"></i> <span id="setup_auto_${auto.id}">R$ 0,00</span></span>
+                            <span class="text-xs font-bold text-purple-600" title="Valor Mensal"><i class="fas fa-sync-alt"></i> <span id="mrr_auto_${auto.id}">R$ 0,00</span></span>
+                        </div>
+                    </div>
                 `;
                 container.appendChild(card);
             });
@@ -917,20 +907,30 @@
                 devTotal += pBaseItem;
                 compTotal += compItem;
 
+                let itemSetup = 0;
+                let itemMrr = 0;
+
                 if (a.modelo === 'tradicional') {
                     devTotalSetup += devItem;
                     let premioROI = (a.economia * 12) * fatorCapturaTrad;
                     roiTotalTrad += premioROI;
-                    let setupItem = devItem + premioROI;
-                    setupTotal += setupItem;
-                    mrrTotalSLA += setupItem * percManutencaoTrad;
+                    itemSetup = devItem + premioROI;
+                    setupTotal += itemSetup;
+                    itemMrr = itemSetup * percManutencaoTrad;
+                    mrrTotalSLA += itemMrr;
                 } else if (a.modelo === 'saas') {
                     devTotalSaas += devItem;
                     let amortItem = devItem / mesesAmortizacao;
                     let lucroItem = a.economia * fatorCapturaSaas;
                     let infraItem = a.infra || 0;
-                    mrrTotalSaas += (amortItem + lucroItem + infraItem);
+                    itemMrr = amortItem + lucroItem + infraItem;
+                    mrrTotalSaas += itemMrr;
                 }
+
+                const elSetup = document.getElementById(`setup_auto_${a.id}`);
+                const elMrr = document.getElementById(`mrr_auto_${a.id}`);
+                if (elSetup) elSetup.innerText = formatCurrency(itemSetup);
+                if (elMrr) elMrr.innerText = formatCurrency(itemMrr);
             });
 
             const mrrGeral = mrrTotalSLA + mrrTotalSaas;
@@ -1017,7 +1017,7 @@
                 }); 
                 
                 if(response.ok) {
-                    msgBox.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${tipo === 'orcamento' ? 'Proposta enviada' : 'Contrato gerado'} com sucesso `;
+                    msgBox.innerHTML = `<i class="fas fa-check-circle mr-1"></i> ${tipo === 'orcamento' ? 'Proposta enviada' : 'Contrato gerado'} com sucesso (n8n)!`;
                     msgBox.className = 'p-3 rounded-lg text-center font-bold text-sm mt-3 bg-green-100 text-green-800 border border-green-300 slide-down';
                     msgBox.classList.remove('hidden');
                 } else {
